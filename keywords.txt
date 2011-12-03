@@ -1,0 +1,48 @@
+#######################################################
+#  keywords.txt - keywords file for the Thermal library
+
+#  Created by Adam Meyer of bildr Aug 10th 2011
+
+#  Released as MIT license
+
+#######################################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Thermal	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+test	KEYWORD2
+print	KEYWORD2
+print	KEYWORD2
+println	KEYWORD2
+println	KEYWORD2
+printBarCode	KEYWORD2
+printFancyBarCode	KEYWORD2
+boldOn	KEYWORD2
+boldOff	KEYWORD2
+sleep	KEYWORD2
+wake	KEYWORD2
+setSize	KEYWORD2
+setBarcodeHeight	KEYWORD2
+feed	KEYWORD2
+tab	KEYWORD2
+justify	KEYWORD2
+doubleHeightOn	KEYWORD2
+doubleHeightOff	KEYWORD2
+inverseOn	KEYWORD2
+inverseOff	KEYWORD2
+setDefault	KEYWORD2
+
+
+
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
