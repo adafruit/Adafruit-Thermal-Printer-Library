@@ -5,43 +5,70 @@
 #include <WProgram.h>
 #include <WConstants.h>
 
-class Thermal{
+#define UPC_A 0
+#define UPC_E 1 
+#define EAN13 2
+#define EAN8  3 
+#define CODE39 4
+#define I25   5 
+#define CODEBAR 6 
+#define CODE93 7 
+#define CODE128 8 
+#define CODE11  9
+#define MSI 10
+
+
+class Thermal : public Print {
   public:
 
     Thermal(int RX_Pin, int TX_Pin);  // constructor
+    void begin();
+    void setDefault();
     void test();
-    void print(char * text);
-    void print(float text, int digits);
-    void println(char * text);
-    void println(float text, int digits);
-	void printBarCode(char * text);
-	void printFancyBarCode(char * text);
-	void boldOn();
-	void boldOff();
-	void setLineHeight(int val);
-	void sleep();
-	void wake();
-	void setSize(char value);
-	void setBarcodeHeight(int val);
-	void feed();
-	void tab();
-	void justify(char value);
-	void doubleHeightOn();
-	void doubleHeightOff();
-	void inverseOn();
-	void inverseOff();
-	void setDefault();
-	
-  private:
-	NewSoftSerial * _printer;
-	
-	int _RX_Pin;
-  	int _TX_Pin;
-  	
-	int heatTime;
-	int heatInterval;
-	char printDensity;
-	char printBreakTime;
+    void write(uint8_t c);
+
+    void inverseOn();
+    void inverseOff();
+    void doubleHeightOn();
+    void doubleHeightOff();
+    void boldOn();
+    void boldOff();
+    void underlineThin();
+    void underlineThick();
+    void underlineOff();
+    
+    void justify(char value);
+    void feed(uint8_t x = 1);
+    void sleep();
+    void wake();
+
+    void setCharSpacing(int spacing);
+    void setSize(char value);
+    void setLineHeight(int val = 32);
+
+    void printBarcode(char * text, uint8_t type);
+    void setBarcodeHeight(int val);
+
+    // ??
+    void tab();
+    
+ private:
+    NewSoftSerial * _printer;
+    boolean linefeedneeded;
+    
+
+    // little helpers to make code easier to read&use
+    void writeBytes(uint8_t a, uint8_t b);
+    void writeBytes(uint8_t a, uint8_t b, uint8_t c);
+    void writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d);
+
+    int _RX_Pin;
+    int _TX_Pin;
+    
+    int heatTime;
+    int heatInterval;
+    char printDensity;
+    char printBreakTime;
 };
 
 #endif
