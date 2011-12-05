@@ -1,6 +1,7 @@
 #include <WProgram.h>
 #include <WConstants.h>
 #include <Thermal.h>
+#include <avr/pgmspace.h>
 
 Thermal::Thermal(int RX_Pin, int TX_Pin) {
   _RX_Pin = RX_Pin;
@@ -71,10 +72,8 @@ void Thermal::write(uint8_t c) {
 }
 
 void Thermal::setBarcodeHeight(int val){
-	//default is 50
-	_printer->print(29, BYTE);
-	_printer->print(104, BYTE);
-	_printer->print(val, BYTE); 
+  //default is 50
+  writeBytes(29, 104, val);
 }
 
 void Thermal::printBarcode(char * text, uint8_t type) {
@@ -167,12 +166,17 @@ void Thermal::setSize(char value){
 void Thermal::underlineOff() {
   writeBytes(27, 45, 0, 10);
 }
-void Thermal::underlineThin() {
+void Thermal::underlineOn() {
   writeBytes(27, 45, 1);
 }
-void Thermal::underlineThick() {
-  writeBytes(27, 45, 2);
+
+void Thermal::printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap) {
+  writeBytes(18, 42, h, w/8);
+  for (uint16_t i=0; i<(w/8) * h; i++) {
+    _printer->print(pgm_read_byte(bitmap + i), BYTE);
+  }
 }
+
 
 void Thermal::wake(){
   writeBytes(27, 61, 1);
@@ -186,15 +190,13 @@ void Thermal::sleep(){
 void Thermal::tab(){
   _printer->print(9, BYTE);
 }
-
 void Thermal::setCharSpacing(int spacing) {
   writeBytes(27, 32, 0, 10);
 }
-
-
 void Thermal::setLineHeight(int val){
   writeBytes(27, 51, val); // default is 32
 }
+/////////////////////////
 
 void *operator new(size_t size_) { return malloc(size_); }
 void* operator new(size_t size_,void *ptr_) { return ptr_; }

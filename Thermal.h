@@ -33,8 +33,7 @@ class Thermal : public Print {
     void doubleHeightOff();
     void boldOn();
     void boldOff();
-    void underlineThin();
-    void underlineThick();
+    void underlineOn();
     void underlineOff();
     
     void justify(char value);
@@ -48,6 +47,8 @@ class Thermal : public Print {
 
     void printBarcode(char * text, uint8_t type);
     void setBarcodeHeight(int val);
+
+    void printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap);
 
     // ??
     void tab();
