@@ -3,6 +3,9 @@ Originally by bildr.com
 
 New edits by Ladyada / Adafruit Industries - adding more capabilites! :)
 
+Full tutorial with wiring diagrams, images, etc is available at 
+http://www.ladyada.net/products/thermalprinter/
+
 Before loading the example code, or even opening the arduino software, place the Thermal folder in your arduino library.
 
 ////ARDUINO LIBRARY LOCATION////
