@@ -1,10 +1,14 @@
 #include <NewSoftSerial.h>
 #include <Thermal.h>
+#include "adalogo.cpp"
+#include "adaqrcode.cpp"
 
 int printer_RX_Pin = 2;  // this is the green wire
 int printer_TX_Pin = 3;  // this is the yellow wire
 
 Thermal printer(printer_RX_Pin, printer_TX_Pin);
+
+
 
 void setup(){
   Serial.begin(9600);
@@ -19,7 +23,7 @@ void setup(){
  
   // test inverse on & off
   printer.begin();
-  /*
+
   printer.inverseOn();
   printer.print("inverse ON");
   printer.inverseOff();  // this adds a line feed
@@ -42,12 +46,9 @@ void setup(){
   printer.print("Bolded text");
   printer.boldOff();  // this adds a line feed
   
-  printer.underlineThin(); 
-  printer.println("Thin underline ");
-  printer.underlineThick();
-  printer.print("Thick underline ");
+  printer.underlineOn(); 
+  printer.print("Underlined text ");
   printer.underlineOff();   // adds a linefeed
-  printer.println("No underline ");
 
   printer.setSize('L');      // set type size, accepts 'S', 'M', 'L'
   printer.print("Large");    // print line
@@ -62,44 +63,24 @@ void setup(){
   printer.println("Taller\nline\nspacing");
   printer.setLineHeight();    // reset to default
   printer.justify('L');  
-*/
+
+  delay(1000);
   printer.printBarcode("ADAFRUIT", CODE39); // print a code39, most common alphanumeric barcode
+  printer.setBarcodeHeight(100);
   printer.printBarcode("123456789123", UPC_A); // print UPC line on product barcodes
- 
-  /*
+  delay(1000);
 
-  printer.setCharSpacing(20);
-  printer.println("wide spacing");
+  // print the 57x57 pixel logo included in adalogo.cpp
+  printer.printBitmap(57, 57, adalogo);
+  
+  // print the 135 x 135 pixel QR code in adaqrcode.cpp
+  printer.printBitmap(135, 135, adaqr);
+  printer.print("Adafruit!");
 
-  printer.tab();printer.print("Tab");
-   printer.tab();
-  printer.print("Works As Well");
-  /*
+  printer.sleep(); //Tell printer to sleep. MUST call wake before printing again, even if reset
+  printer.wake(); //Wake printer.
   
-    //printer.printBarCode("123456789123"); //print simple bar code - up to 12 characters long
-  //printer.printFancyBarCode("WWW.BILDR.ORG"); // print fancy barcode. Cap latters and some symbols
-
-  //printer.setBarcodeHeight(50); // set barcode px height: 0-255
-
-  //printer.boldOn(); // Turn bold on
-  //printer.boldOff(); //Rurn bold off
-  
-  
-  //printer.sleep(); //Tell printer to sleep. MUST call wake before printing again, even if reset
-  //printer.wake(); //Wake printer.
-  
-  //printer.setSize('L'); // set type size, accepts 'S', 'M', 'L'
-  
-  //printer.feed(); //advance one line
-
-  //printer.tab(); //Tabs text over 8 spaces
-  
-  //printer.justify('R'); //sets text justification (left, center, right) accepts 'L', 'C', 'R'
-  
-  //printer.setDefault(); //set printer to defaults. ****WILL FEED SEVERAL LINES WHEN CALLED***
-  */
-  
-  
+  printer.setDefault(); //set printer to defaults. ****WILL FEED SEVERAL LINES WHEN CALLED***
 }
 
 void loop(){
