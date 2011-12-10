@@ -1,5 +1,9 @@
-#include <NewSoftSerial.h>
-#include <Thermal.h>
+#if ARDUINO >= 100
+ #include "SoftwareSerial.h"
+#else
+ #include "NewSoftSerial.h"
+#endif
+#include "Thermal.h"
 #include "adalogo.cpp"
 #include "adaqrcode.cpp"
 

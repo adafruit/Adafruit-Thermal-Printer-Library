@@ -1,9 +1,14 @@
 #ifndef Thermal_h
 #define Thermal_h
 
-#include <NewSoftSerial.h>
-#include <WProgram.h>
-#include <WConstants.h>
+#if ARDUINO >= 100
+ #include "Arduino.h"
+ #include "SoftwareSerial.h"
+#else
+ #include "WProgram.h"
+ #include "WConstants.h"
+ #include "NewSoftSerial.h"
+#endif
 
 #define UPC_A 0
 #define UPC_E 1 
@@ -25,7 +30,11 @@ class Thermal : public Print {
     void begin();
     void setDefault();
     void test();
+#if ARDUINO >= 100
+    size_t write(uint8_t c);
+#else
     void write(uint8_t c);
+#endif
 
     void inverseOn();
     void inverseOff();
@@ -54,7 +63,11 @@ class Thermal : public Print {
     void tab();
     
  private:
+#if ARDUINO >= 100
+    SoftwareSerial * _printer;
+#else
     NewSoftSerial * _printer;
+#endif
     boolean linefeedneeded;
     
 
