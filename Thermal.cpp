@@ -105,7 +105,7 @@ void Thermal::write(uint8_t c) {
   delay(1);
 
 #if ARDUINO >= 100
-  return 10; // " 0xXX (X)\n"
+  return 1;
 #endif
 }
 
