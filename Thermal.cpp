@@ -96,11 +96,12 @@ void Thermal::write(uint8_t c) {
   Serial.print(c, HEX);
 #if ARDUINO >= 100
   Serial.print(" ("); Serial.write(c); Serial.println(")");
+  _printer->write(c);
 #else
   Serial.print(" ("); Serial.print(c, BYTE); Serial.println(")");
+  _printer->print(c);
 #endif
 
-  _printer->print(c);
   delay(1);
 
 #if ARDUINO >= 100
