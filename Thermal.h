@@ -47,6 +47,7 @@ class Thermal : public Print {
     
     void justify(char value);
     void feed(uint8_t x = 1);
+    void flush();
     void sleep();
     void wake();
 
@@ -72,6 +73,7 @@ class Thermal : public Print {
     
 
     // little helpers to make code easier to read&use
+    void writeBytes(uint8_t a);
     void writeBytes(uint8_t a, uint8_t b);
     void writeBytes(uint8_t a, uint8_t b, uint8_t c);
     void writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d);

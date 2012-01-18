@@ -125,6 +125,13 @@ void Thermal::printBarcode(char * text, uint8_t type) {
   feed(2);
 }
 
+void Thermal::writeBytes(uint8_t a) {
+#if ARDUINO >= 100
+  _printer->write(a);
+#else
+  _printer->print(a, BYTE);
+#endif
+}
 
 void Thermal::writeBytes(uint8_t a, uint8_t b) {
 #if ARDUINO >= 100
@@ -204,6 +211,10 @@ void Thermal::justify(char value){
 void Thermal::feed(uint8_t x){
   while (x--)
     write('\n');
+}
+
+void Thermal::flush() {
+  writeBytes(12);
 }
 
 void Thermal::setSize(char value){
