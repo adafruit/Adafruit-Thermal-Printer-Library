@@ -48,8 +48,12 @@ class Thermal : public Print {
     void normal();
     void inverseOn();
     void inverseOff();
+    void upsideDownOn();
+    void upsideDownOff();
     void doubleHeightOn();
     void doubleHeightOff();
+    void doubleWidthOn();
+    void doubleWidthOff();
     void boldOn();
     void boldOff();
     void underlineOn();
@@ -85,6 +89,8 @@ class Thermal : public Print {
 
     int printMode;
     void writePrintMode();
+    void setPrintMode(uint8_t mask);
+    void unsetPrintMode(uint8_t mask);
 
     int _RX_Pin;
     int _TX_Pin;

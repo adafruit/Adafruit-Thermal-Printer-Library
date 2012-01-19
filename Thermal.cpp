@@ -131,6 +131,22 @@ void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 
 // === Character commands ===
 
+#define INVERSE_MASK (1 << 1)
+#define UPDOWN_MASK (1 << 2)
+#define BOLD_MASK (1 << 3)
+#define DOUBLE_HEIGHT_MASK (1 << 4)
+#define DOUBLE_WIDTH_MASK (1 << 5)
+#define STRIKE_MASK (1 << 6)
+
+void Thermal::setPrintMode(uint8_t mask) {
+  printMode |= mask;
+  writePrintMode();
+}
+void Thermal::unsetPrintMode(uint8_t mask) {
+  printMode &= ~mask;
+  writePrintMode();
+}
+
 void Thermal::writePrintMode() {
   writeBytes(27, 33, printMode);
 }
@@ -141,28 +157,51 @@ void Thermal::normal() {
 }
 
 void Thermal::inverseOn(){
-  writeBytes(29, 'B', 1);
+  setPrintMode(INVERSE_MASK);
 }
 
 void Thermal::inverseOff(){
-  writeBytes(29, 'B', 0, 10);
+  unsetPrintMode(INVERSE_MASK);
+}
+
+void Thermal::upsideDownOn(){
+  setPrintMode(UPDOWN_MASK);
+}
+
+void Thermal::upsideDownOff(){
+  unsetPrintMode(UPDOWN_MASK);
 }
 
 void Thermal::doubleHeightOn(){
-  writeBytes(27, 14);
+  setPrintMode(DOUBLE_HEIGHT_MASK);
 }
 
 void Thermal::doubleHeightOff(){
-  writeBytes(27, 20);
+  unsetPrintMode(DOUBLE_HEIGHT_MASK);
 }
 
+void Thermal::doubleWidthOn(){
+  setPrintMode(DOUBLE_WIDTH_MASK);
+}
+
+void Thermal::doubleWidthOff(){
+  unsetPrintMode(DOUBLE_WIDTH_MASK);
+}
+
+void Thermal::strikeOn(){
+  setPrintMode(STRIKE_MASK);
+}
+
+void Thermal::strikeOff(){
+  unsetPrintMode(STRIKE_MASK);
+}
 
 void Thermal::boldOn(){
-  writeBytes(27, 69, 1);
+  setPrintMode(BOLD_MASK);
 }
 
 void Thermal::boldOff(){
-  writeBytes(27, 69, 0);
+  unsetPrintMode(BOLD_MASK);
   if (linefeedneeded)
     feed();
   linefeedneeded = false;
