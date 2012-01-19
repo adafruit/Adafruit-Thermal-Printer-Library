@@ -22,6 +22,12 @@
 #define CODE11  9
 #define MSI 10
 
+#if ARDUINO >= 100
+  #define SERIAL_IMPL SoftwareSerial
+#else
+  #define SERIAL_IMPL NewSoftSerial
+#endif
+
 
 class Thermal : public Print {
   public:
@@ -64,11 +70,7 @@ class Thermal : public Print {
     void tab();
 
  private:
-#if ARDUINO >= 100
-    SoftwareSerial * _printer;
-#else
-    NewSoftSerial * _printer;
-#endif
+    SERIAL_IMPL * _printer;
     boolean linefeedneeded;
 
 

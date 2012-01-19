@@ -14,11 +14,7 @@ Thermal::Thermal(int RX_Pin, int TX_Pin) {
 }
 
 void Thermal::begin() {
-#if ARDUINO >= 100
-  _printer = new SoftwareSerial (_RX_Pin, _TX_Pin);
-#else
-  _printer = new NewSoftSerial (_RX_Pin, _TX_Pin);
-#endif
+  _printer = new SERIAL_IMPL(_RX_Pin, _TX_Pin);
   _printer->begin(19200);
 
   heatTime = 120; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
