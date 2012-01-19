@@ -129,6 +129,17 @@ void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   PRINTER_PRINT(d);
 }
 
+// === Character commands ===
+
+void Thermal::writePrintMode() {
+  writeBytes(27, 33, printMode);
+}
+
+void Thermal::normal() {
+  printMode = 0;
+  writePrintMode();
+}
+
 void Thermal::inverseOn(){
   writeBytes(29, 'B', 1);
 }

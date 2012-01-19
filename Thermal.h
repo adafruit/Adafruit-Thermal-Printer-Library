@@ -45,6 +45,7 @@ class Thermal : public Print {
     void write(uint8_t c);
 #endif
 
+    void normal();
     void inverseOn();
     void inverseOff();
     void doubleHeightOn();
@@ -76,12 +77,14 @@ class Thermal : public Print {
     SERIAL_IMPL * _printer;
     boolean linefeedneeded;
 
-
     // little helpers to make code easier to read&use
     void writeBytes(uint8_t a);
     void writeBytes(uint8_t a, uint8_t b);
     void writeBytes(uint8_t a, uint8_t b, uint8_t c);
     void writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d);
+
+    int printMode;
+    void writePrintMode();
 
     int _RX_Pin;
     int _TX_Pin;
