@@ -246,10 +246,19 @@ void Thermal::underlineOn() {
   writeBytes(27, 45, 1);
 }
 
-void Thermal::printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap) {
-  writeBytes(18, 42, h, w/8);
-  for (int i=0; i<(w/8) * h; i++) {
-    PRINTER_PRINT(pgm_read_byte(bitmap + i));
+void Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
+  if (w > 384) return; // maximum width of the printer
+  for (int rowStart=0; rowStart < h; rowStart += 256) {
+    int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
+    printBitmapChunk(w, chunkHeight, rowStart*w, bitmap);
+  }
+}
+
+void Thermal::printBitmapChunk(int w, uint8_t h, int offset, const uint8_t *bitmap) {
+  writeBytes(18, 42);
+  writeBytes(h, w/8);
+  for (int i=0; i<((w/8)*h); i++) {
+    PRINTER_PRINT(pgm_read_byte(bitmap + offset + i));
   }
 }
 

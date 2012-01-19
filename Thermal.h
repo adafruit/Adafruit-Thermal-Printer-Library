@@ -72,7 +72,7 @@ class Thermal : public Print {
     void printBarcode(char * text, uint8_t type);
     void setBarcodeHeight(int val);
 
-    void printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap);
+    void printBitmap(int w, int h, const uint8_t *bitmap);
 
     // ??
     void tab();
@@ -91,6 +91,8 @@ class Thermal : public Print {
     void writePrintMode();
     void setPrintMode(uint8_t mask);
     void unsetPrintMode(uint8_t mask);
+
+    void printBitmapChunk(int w, uint8_t h, int offset, const uint8_t *bitmap);
 
     int _RX_Pin;
     int _TX_Pin;
