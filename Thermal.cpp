@@ -246,6 +246,14 @@ void Thermal::underlineOn() {
   writeBytes(27, 45, 1);
 }
 
+// Underlines of different weights can be produced:
+// 0 - no underline
+// 1 - thin underline
+// 2 - thick underline
+void Thermal::underlineOn(uint8_t weight) {
+  writeBytes(27, 45, weight);
+}
+
 void Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
   if (w > 384) return; // maximum width of the printer
   for (int rowStart=0; rowStart < h; rowStart += 256) {

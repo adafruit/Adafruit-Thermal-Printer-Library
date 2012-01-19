@@ -57,6 +57,7 @@ class Thermal : public Print {
     void boldOn();
     void boldOff();
     void underlineOn();
+    void underlineOn(uint8_t weight);
     void underlineOff();
 
     void justify(char value);
