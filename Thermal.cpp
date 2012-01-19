@@ -22,36 +22,18 @@ void Thermal::begin() {
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
 
-
-#if ARDUINO >= 100
-  _printer->write(27);
-  _printer->write(55);
-  _printer->write(7); //Default 64 dots = 8*('7'+1)
-  _printer->write(heatTime); //Default 80 or 800us
-  _printer->write(heatInterval); //Default 2 or 20us
-
+  PRINTER_PRINT(27);
+  PRINTER_PRINT(55);
+  PRINTER_PRINT(7); //Default 64 dots = 8*('7'+1)
+  PRINTER_PRINT(heatTime); //Default 80 or 800us
+  PRINTER_PRINT(heatInterval); //Default 2 or 20us
 
   //Modify the print density and timeout
-  _printer->write(18);
-  _printer->write(35);
+  PRINTER_PRINT(18);
+  PRINTER_PRINT(35);
 
   int printSetting = (printDensity<<4) | printBreakTime;
-  _printer->write(printSetting); //Combination of printDensity and printBreakTime
-#else
-  _printer->print(27, BYTE);
-  _printer->print(55, BYTE);
-  _printer->print(7, BYTE); //Default 64 dots = 8*('7'+1)
-  _printer->print(heatTime, BYTE); //Default 80 or 800us
-  _printer->print(heatInterval, BYTE); //Default 2 or 20us
-
-
-  //Modify the print density and timeout
-  _printer->print(18, BYTE);
-  _printer->print(35, BYTE);
-
-  int printSetting = (printDensity<<4) | printBreakTime;
-  _printer->print(printSetting, BYTE); //Combination of printDensity and printBreakTime
-#endif
+  PRINTER_PRINT(printSetting); //Combination of printDensity and printBreakTime
 
   setDefault();
 }
@@ -90,14 +72,14 @@ void Thermal::write(uint8_t c) {
 
   Serial.print(" 0x");
   Serial.print(c, HEX);
+  Serial.print(" ("); 
 #if ARDUINO >= 100
-  Serial.print(" ("); Serial.write(c); Serial.println(")");
-  _printer->write(c);
+  Serial.write(c);
 #else
-  Serial.print(" ("); Serial.print(c, BYTE); Serial.println(")");
-  _printer->print(c);
+  Serial.print(" (");
 #endif
-
+  Serial.println(")");
+  PRINTER_PRINT(c);
   delay(1);
 
 #if ARDUINO >= 100
@@ -122,47 +104,25 @@ void Thermal::printBarcode(char * text, uint8_t type) {
 }
 
 void Thermal::writeBytes(uint8_t a) {
-#if ARDUINO >= 100
-  _printer->write(a);
-#else
-  _printer->print(a, BYTE);
-#endif
+  PRINTER_PRINT(a);
 }
 
 void Thermal::writeBytes(uint8_t a, uint8_t b) {
-#if ARDUINO >= 100
-  _printer->write(a);
-  _printer->write(b);
-#else
-  _printer->print(a, BYTE);
-  _printer->print(b, BYTE);
-#endif
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
 }
 
 void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
-#if ARDUINO >= 100
-  _printer->write(a);
-  _printer->write(b);
-  _printer->write(c);
-#else
-  _printer->print(a, BYTE);
-  _printer->print(b, BYTE);
-  _printer->print(c, BYTE);
-#endif
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
+  PRINTER_PRINT(c);
 }
 
 void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-#if ARDUINO >= 100
-  _printer->write(a);
-  _printer->write(b);
-  _printer->write(c);
-  _printer->write(d);
-#else
-  _printer->print(a, BYTE);
-  _printer->print(b, BYTE);
-  _printer->print(c, BYTE);
-  _printer->print(d, BYTE);
-#endif
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
+  PRINTER_PRINT(c);
+  PRINTER_PRINT(d);
 }
 
 void Thermal::inverseOn(){
@@ -236,11 +196,7 @@ void Thermal::underlineOn() {
 void Thermal::printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap) {
   writeBytes(18, 42, h, w/8);
   for (int i=0; i<(w/8) * h; i++) {
-#if ARDUINO >= 100
-    _printer->write(pgm_read_byte(bitmap + i));
-#else
-    _printer->print(pgm_read_byte(bitmap + i), BYTE);
-#endif
+    PRINTER_PRINT(pgm_read_byte(bitmap + i));
   }
 }
 
@@ -255,11 +211,7 @@ void Thermal::sleep(){
 
 ////////////////////// not working?
 void Thermal::tab(){
-#if ARDUINO >= 100
-  _printer->write(9);
-#else
-  _printer->print(9, BYTE);
-#endif
+  PRINTER_PRINT(9);
 }
 void Thermal::setCharSpacing(int spacing) {
   writeBytes(27, 32, 0, 10);

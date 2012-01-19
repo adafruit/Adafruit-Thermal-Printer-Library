@@ -24,8 +24,10 @@
 
 #if ARDUINO >= 100
   #define SERIAL_IMPL SoftwareSerial
+  #define PRINTER_PRINT(a) _printer->write(a);
 #else
   #define SERIAL_IMPL NewSoftSerial
+  #define PRINTER_PRINT(a) _printer->print(a, BYTE);
 #endif
 
 
