@@ -10,7 +10,6 @@
 Thermal::Thermal(int RX_Pin, int TX_Pin) {
   _RX_Pin = RX_Pin;
   _TX_Pin = TX_Pin;
-
 }
 
 void Thermal::begin() {
@@ -49,7 +48,6 @@ void Thermal::setDefault(){
   setBarcodeHeight(50);
   setSize('s');
 }
-
 
 void Thermal::test(){
   println("Hello World!");
@@ -163,7 +161,6 @@ void Thermal::justify(char value){
   writeBytes(0x1B, 0x61, pos);
 }
 
-
 void Thermal::feed(uint8_t x){
   while (x--)
     write('\n');
@@ -199,7 +196,6 @@ void Thermal::printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap) {
     PRINTER_PRINT(pgm_read_byte(bitmap + i));
   }
 }
-
 
 void Thermal::wake(){
   writeBytes(27, 61, 1);
