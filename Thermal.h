@@ -11,14 +11,14 @@
 #endif
 
 #define UPC_A 0
-#define UPC_E 1 
+#define UPC_E 1
 #define EAN13 2
-#define EAN8  3 
+#define EAN8  3
 #define CODE39 4
-#define I25   5 
-#define CODEBAR 6 
-#define CODE93 7 
-#define CODE128 8 
+#define I25   5
+#define CODEBAR 6
+#define CODE93 7
+#define CODE128 8
 #define CODE11  9
 #define MSI 10
 
@@ -44,7 +44,7 @@ class Thermal : public Print {
     void boldOff();
     void underlineOn();
     void underlineOff();
-    
+
     void justify(char value);
     void feed(uint8_t x = 1);
     void flush();
@@ -62,7 +62,7 @@ class Thermal : public Print {
 
     // ??
     void tab();
-    
+
  private:
 #if ARDUINO >= 100
     SoftwareSerial * _printer;
@@ -70,7 +70,7 @@ class Thermal : public Print {
     NewSoftSerial * _printer;
 #endif
     boolean linefeedneeded;
-    
+
 
     // little helpers to make code easier to read&use
     void writeBytes(uint8_t a);
@@ -80,7 +80,7 @@ class Thermal : public Print {
 
     int _RX_Pin;
     int _TX_Pin;
-    
+
     int heatTime;
     int heatInterval;
     char printDensity;

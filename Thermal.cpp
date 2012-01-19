@@ -20,25 +20,25 @@ void Thermal::begin() {
   _printer = new NewSoftSerial (_RX_Pin, _TX_Pin);
 #endif
   _printer->begin(19200);
-  
+
   heatTime = 120; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
   heatInterval = 50; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
-  
-  
+
+
 #if ARDUINO >= 100
   _printer->write(27);
   _printer->write(55);
   _printer->write(7); //Default 64 dots = 8*('7'+1)
   _printer->write(heatTime); //Default 80 or 800us
   _printer->write(heatInterval); //Default 2 or 20us
-  
-  
+
+
   //Modify the print density and timeout
   _printer->write(18);
   _printer->write(35);
-  
+
   int printSetting = (printDensity<<4) | printBreakTime;
   _printer->write(printSetting); //Combination of printDensity and printBreakTime
 #else
@@ -47,16 +47,16 @@ void Thermal::begin() {
   _printer->print(7, BYTE); //Default 64 dots = 8*('7'+1)
   _printer->print(heatTime, BYTE); //Default 80 or 800us
   _printer->print(heatInterval, BYTE); //Default 2 or 20us
-  
-  
+
+
   //Modify the print density and timeout
   _printer->print(18, BYTE);
   _printer->print(35, BYTE);
-  
+
   int printSetting = (printDensity<<4) | printBreakTime;
   _printer->print(printSetting, BYTE); //Combination of printDensity and printBreakTime
 #endif
-  
+
   setDefault();
 }
 
@@ -87,7 +87,7 @@ size_t Thermal::write(uint8_t c) {
 void Thermal::write(uint8_t c) {
   if (c == 0x13) return;
 #endif
-  if (c != 0xA)  
+  if (c != 0xA)
     linefeedneeded = true;
   else
     linefeedneeded = false;
@@ -120,7 +120,7 @@ void Thermal::printBarcode(char * text, uint8_t type) {
     write(text[i]); //Data
   }
   write(0); //Terminator
-	
+
   delay(3000); //For some reason we can't immediately have line feeds here
   feed(2);
 }
@@ -199,11 +199,11 @@ void Thermal::boldOff(){
 
 void Thermal::justify(char value){
   uint8_t pos = 0;
-	
+
   if(value == 'l' || value == 'L') pos = 0;
   if(value == 'c' || value == 'C') pos = 1;
   if(value == 'r' || value == 'R') pos = 2;
-  
+
   writeBytes(0x1B, 0x61, pos);
 }
 
@@ -219,11 +219,11 @@ void Thermal::flush() {
 
 void Thermal::setSize(char value){
   int size = 0;
-  
+
   if(value == 's' || value == 'S') size = 0;
   if(value == 'm' || value == 'M') size = 10;
   if(value == 'l' || value == 'L') size = 25;
-  
+
   writeBytes(29, 33, size, 10);
   // if (linefeedneeded)
   //  println("lfn"); //feed();
