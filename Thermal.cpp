@@ -16,6 +16,8 @@ void Thermal::begin() {
   _printer = new SERIAL_IMPL(_RX_Pin, _TX_Pin);
   _printer->begin(19200);
 
+  reset();
+
   heatTime = 120; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
   heatInterval = 50; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
@@ -33,10 +35,14 @@ void Thermal::begin() {
 
   int printSetting = (printDensity<<4) | printBreakTime;
   PRINTER_PRINT(printSetting); //Combination of printDensity and printBreakTime
-
-  setDefault();
 }
 
+// reset printer
+void Thermal::reset() {
+  writeBytes(27, 64);
+}
+
+// reset formatting
 void Thermal::setDefault(){
   wake();
   justify('L');
