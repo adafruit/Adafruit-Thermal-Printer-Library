@@ -202,9 +202,6 @@ void Thermal::boldOn(){
 
 void Thermal::boldOff(){
   unsetPrintMode(BOLD_MASK);
-  if (linefeedneeded)
-    feed();
-  linefeedneeded = false;
 }
 
 void Thermal::justify(char value){
