@@ -247,7 +247,6 @@ void Thermal::underlineOn(uint8_t weight) {
   writeBytes(27, 45, weight);
 }
 
-// NOTE: for some reason turning underline off will also insert a newline
 void Thermal::underlineOff() {
   underlineOn(0);
 }
