@@ -243,7 +243,7 @@ void Thermal::setSize(char value){
 // 0 - no underline
 // 1 - normal underline
 // 2 - thick underline
-void Thermal::underlineOn(uint8_t weight=1) {
+void Thermal::underlineOn(uint8_t weight) {
   writeBytes(27, 45, weight);
 }
 
