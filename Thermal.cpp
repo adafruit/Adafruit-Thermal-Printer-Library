@@ -239,15 +239,17 @@ void Thermal::setSize(char value){
   //linefeedneeded = false;
 }
 
-void Thermal::underlineOff() {
-  writeBytes(27, 45, 0, 10);
-}
-
 // Underlines of different weights can be produced:
+// 0 - no underline
 // 1 - normal underline
 // 2 - thick underline
 void Thermal::underlineOn(uint8_t weight=1) {
   writeBytes(27, 45, weight);
+}
+
+// NOTE: for some reason turning underline off will also insert a newline
+void Thermal::underlineOff() {
+  underlineOn(0);
 }
 
 void Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
