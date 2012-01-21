@@ -23,18 +23,15 @@ void Thermal::begin() {
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
 
-  PRINTER_PRINT(27);
-  PRINTER_PRINT(55);
-  PRINTER_PRINT(7); //Default 64 dots = 8*('7'+1)
-  PRINTER_PRINT(heatTime); //Default 80 or 800us
-  PRINTER_PRINT(heatInterval); //Default 2 or 20us
+  writeBytes(27, 55);
+  writeBytes(7); //Default 64 dots = 8*('7'+1)
+  writeBytes(heatTime); //Default 80 or 800us
+  writeBytes(heatInterval); //Default 2 or 20us
 
   //Modify the print density and timeout
-  PRINTER_PRINT(18);
-  PRINTER_PRINT(35);
-
+  writeBytes(18, 35);
   int printSetting = (printDensity<<4) | printBreakTime;
-  PRINTER_PRINT(printSetting); //Combination of printDensity and printBreakTime
+  writeBytes(printSetting); //Combination of printDensity and printBreakTime
 }
 
 // reset printer
