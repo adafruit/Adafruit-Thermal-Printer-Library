@@ -214,9 +214,17 @@ void Thermal::justify(char value){
   writeBytes(0x1B, 0x61, pos);
 }
 
+// Feeds by the specified number of lines
 void Thermal::feed(uint8_t x){
+  // The datasheet claims sending bytes 27, 100, <x> will work
+  // but it feeds much much more.
   while (x--)
     write('\n');
+}
+
+// Feeds by the specified number of rows of pixels
+void Thermal::feedRows(uint8_t rows) {
+  writeBytes(27, 74, rows);
 }
 
 void Thermal::flush() {

@@ -63,6 +63,7 @@ class Thermal : public Print {
 
     void justify(char value);
     void feed(uint8_t x = 1);
+    void feedRows(uint8_t);
     void flush();
     void sleep();
     void wake();
