@@ -65,7 +65,10 @@ class Thermal : public Print {
     void feed(uint8_t x = 1);
     void feedRows(uint8_t);
     void flush();
+    void online();
+    void offline();
     void sleep();
+    void sleepAfter(uint8_t seconds);
     void wake();
 
     void setCharSpacing(int spacing);

@@ -44,7 +44,7 @@ void Thermal::reset() {
 
 // reset formatting
 void Thermal::setDefault(){
-  wake();
+  online();
   justify('L');
   inverseOff();
   doubleHeightOff();
@@ -272,12 +272,35 @@ void Thermal::printBitmapChunk(int w, uint8_t h, int offset, const uint8_t *bitm
   }
 }
 
-void Thermal::wake(){
+// Take the printer offline. Print commands sent after this will be
+// ignored until `online` is called
+void Thermal::offline(){
+  writeBytes(27, 61, 0);
+}
+
+// Take the printer back online. Subsequent print commands will be
+// obeyed.
+void Thermal::online(){
   writeBytes(27, 61, 1);
 }
 
-void Thermal::sleep(){
-  writeBytes(27, 61, 0);
+// Put the printer into a low-energy state immediately
+void Thermal::sleep() {
+  sleepAfter(0);
+}
+
+// Put the printer into a low-energy state after the given number
+// of seconds
+void Thermal::sleepAfter(uint8_t seconds) {
+  writeBytes(27, 56, seconds);
+}
+
+// Wake the printer from a low-energy state. This command will wait
+// for 50ms (as directed by the datasheet) before allowing further
+// commands to be send.
+void Thermal::wake() {
+  writeBytes(255);
+  delay(50);
 }
 
 ////////////////////// not working?
