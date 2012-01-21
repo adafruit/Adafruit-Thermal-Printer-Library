@@ -57,6 +57,10 @@ void Thermal::test(){
   feed(2);
 }
 
+void Thermal::testPage() {
+  writeBytes(18, 84);
+}
+
 // this is the basic function for all printing, the rest is taken care of by the
 // inherited Print class!
 #if ARDUINO >= 100

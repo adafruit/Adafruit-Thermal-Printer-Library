@@ -39,6 +39,8 @@ class Thermal : public Print {
     void reset();
     void setDefault();
     void test();
+    void testPage();
+
 #if ARDUINO >= 100
     size_t write(uint8_t c);
 #else
