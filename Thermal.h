@@ -85,7 +85,7 @@ class Thermal : public Print {
     // ??
     void tab();
 
-  private:
+  protected:
     SERIAL_IMPL * _printer;
     boolean linefeedneeded;
 
