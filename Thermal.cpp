@@ -10,58 +10,38 @@
 Thermal::Thermal(int RX_Pin, int TX_Pin) {
   _RX_Pin = RX_Pin;
   _TX_Pin = TX_Pin;
-
 }
 
 void Thermal::begin() {
-#if ARDUINO >= 100
-  _printer = new SoftwareSerial (_RX_Pin, _TX_Pin);
-#else
-  _printer = new NewSoftSerial (_RX_Pin, _TX_Pin);
-#endif
+  _printer = new SERIAL_IMPL(_RX_Pin, _TX_Pin);
   _printer->begin(19200);
-  
+
+  reset();
+
   heatTime = 120; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
   heatInterval = 50; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
-  
-  
-#if ARDUINO >= 100
-  _printer->write(27);
-  _printer->write(55);
-  _printer->write(7); //Default 64 dots = 8*('7'+1)
-  _printer->write(heatTime); //Default 80 or 800us
-  _printer->write(heatInterval); //Default 2 or 20us
-  
-  
+
+  writeBytes(27, 55);
+  writeBytes(7); //Default 64 dots = 8*('7'+1)
+  writeBytes(heatTime); //Default 80 or 800us
+  writeBytes(heatInterval); //Default 2 or 20us
+
   //Modify the print density and timeout
-  _printer->write(18);
-  _printer->write(35);
-  
+  writeBytes(18, 35);
   int printSetting = (printDensity<<4) | printBreakTime;
-  _printer->write(printSetting); //Combination of printDensity and printBreakTime
-#else
-  _printer->print(27, BYTE);
-  _printer->print(55, BYTE);
-  _printer->print(7, BYTE); //Default 64 dots = 8*('7'+1)
-  _printer->print(heatTime, BYTE); //Default 80 or 800us
-  _printer->print(heatInterval, BYTE); //Default 2 or 20us
-  
-  
-  //Modify the print density and timeout
-  _printer->print(18, BYTE);
-  _printer->print(35, BYTE);
-  
-  int printSetting = (printDensity<<4) | printBreakTime;
-  _printer->print(printSetting, BYTE); //Combination of printDensity and printBreakTime
-#endif
-  
-  setDefault();
+  writeBytes(printSetting); //Combination of printDensity and printBreakTime
 }
 
+// reset printer
+void Thermal::reset() {
+  writeBytes(27, 64);
+}
+
+// reset formatting
 void Thermal::setDefault(){
-  wake();
+  online();
   justify('L');
   inverseOff();
   doubleHeightOff();
@@ -72,10 +52,13 @@ void Thermal::setDefault(){
   setSize('s');
 }
 
-
 void Thermal::test(){
   println("Hello World!");
   feed(2);
+}
+
+void Thermal::testPage() {
+  writeBytes(18, 84);
 }
 
 // this is the basic function for all printing, the rest is taken care of by the
@@ -87,21 +70,21 @@ size_t Thermal::write(uint8_t c) {
 void Thermal::write(uint8_t c) {
   if (c == 0x13) return;
 #endif
-  if (c != 0xA)  
+  if (c != 0xA)
     linefeedneeded = true;
   else
     linefeedneeded = false;
 
   Serial.print(" 0x");
   Serial.print(c, HEX);
+  Serial.print(" ("); 
 #if ARDUINO >= 100
-  Serial.print(" ("); Serial.write(c); Serial.println(")");
-  _printer->write(c);
+  Serial.write(c);
 #else
-  Serial.print(" ("); Serial.print(c, BYTE); Serial.println(")");
-  _printer->print(c);
+  Serial.print(" (");
 #endif
-
+  Serial.println(")");
+  PRINTER_PRINT(c);
   delay(1);
 
 #if ARDUINO >= 100
@@ -120,139 +103,210 @@ void Thermal::printBarcode(char * text, uint8_t type) {
     write(text[i]); //Data
   }
   write(0); //Terminator
-	
+
   delay(3000); //For some reason we can't immediately have line feeds here
   feed(2);
 }
 
+void Thermal::writeBytes(uint8_t a) {
+  PRINTER_PRINT(a);
+}
 
 void Thermal::writeBytes(uint8_t a, uint8_t b) {
-#if ARDUINO >= 100
-  _printer->write(a);
-  _printer->write(b);
-#else
-  _printer->print(a, BYTE);
-  _printer->print(b, BYTE);
-#endif
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
 }
 
 void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
-#if ARDUINO >= 100
-  _printer->write(a);
-  _printer->write(b);
-  _printer->write(c);
-#else
-  _printer->print(a, BYTE);
-  _printer->print(b, BYTE);
-  _printer->print(c, BYTE);
-#endif
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
+  PRINTER_PRINT(c);
 }
 
 void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-#if ARDUINO >= 100
-  _printer->write(a);
-  _printer->write(b);
-  _printer->write(c);
-  _printer->write(d);
-#else
-  _printer->print(a, BYTE);
-  _printer->print(b, BYTE);
-  _printer->print(c, BYTE);
-  _printer->print(d, BYTE);
-#endif
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
+  PRINTER_PRINT(c);
+  PRINTER_PRINT(d);
+}
+
+// === Character commands ===
+
+#define INVERSE_MASK (1 << 1)
+#define UPDOWN_MASK (1 << 2)
+#define BOLD_MASK (1 << 3)
+#define DOUBLE_HEIGHT_MASK (1 << 4)
+#define DOUBLE_WIDTH_MASK (1 << 5)
+#define STRIKE_MASK (1 << 6)
+
+void Thermal::setPrintMode(uint8_t mask) {
+  printMode |= mask;
+  writePrintMode();
+}
+void Thermal::unsetPrintMode(uint8_t mask) {
+  printMode &= ~mask;
+  writePrintMode();
+}
+
+void Thermal::writePrintMode() {
+  writeBytes(27, 33, printMode);
+}
+
+void Thermal::normal() {
+  printMode = 0;
+  writePrintMode();
 }
 
 void Thermal::inverseOn(){
-  writeBytes(29, 'B', 1);
+  setPrintMode(INVERSE_MASK);
 }
 
 void Thermal::inverseOff(){
-  writeBytes(29, 'B', 0, 10);
+  unsetPrintMode(INVERSE_MASK);
+}
+
+void Thermal::upsideDownOn(){
+  setPrintMode(UPDOWN_MASK);
+}
+
+void Thermal::upsideDownOff(){
+  unsetPrintMode(UPDOWN_MASK);
 }
 
 void Thermal::doubleHeightOn(){
-  writeBytes(27, 14);
+  setPrintMode(DOUBLE_HEIGHT_MASK);
 }
 
 void Thermal::doubleHeightOff(){
-  writeBytes(27, 20);
+  unsetPrintMode(DOUBLE_HEIGHT_MASK);
 }
 
+void Thermal::doubleWidthOn(){
+  setPrintMode(DOUBLE_WIDTH_MASK);
+}
+
+void Thermal::doubleWidthOff(){
+  unsetPrintMode(DOUBLE_WIDTH_MASK);
+}
+
+void Thermal::strikeOn(){
+  setPrintMode(STRIKE_MASK);
+}
+
+void Thermal::strikeOff(){
+  unsetPrintMode(STRIKE_MASK);
+}
 
 void Thermal::boldOn(){
-  writeBytes(27, 69, 1);
+  setPrintMode(BOLD_MASK);
 }
 
 void Thermal::boldOff(){
-  writeBytes(27, 69, 0);
-  if (linefeedneeded)
-    feed();
-  linefeedneeded = false;
+  unsetPrintMode(BOLD_MASK);
 }
 
 void Thermal::justify(char value){
   uint8_t pos = 0;
-	
+
   if(value == 'l' || value == 'L') pos = 0;
   if(value == 'c' || value == 'C') pos = 1;
   if(value == 'r' || value == 'R') pos = 2;
-  
+
   writeBytes(0x1B, 0x61, pos);
 }
 
-
+// Feeds by the specified number of lines
 void Thermal::feed(uint8_t x){
+  // The datasheet claims sending bytes 27, 100, <x> will work
+  // but it feeds much much more.
   while (x--)
     write('\n');
 }
 
+// Feeds by the specified number of rows of pixels
+void Thermal::feedRows(uint8_t rows) {
+  writeBytes(27, 74, rows);
+}
+
+void Thermal::flush() {
+  writeBytes(12);
+}
+
 void Thermal::setSize(char value){
   int size = 0;
-  
+
   if(value == 's' || value == 'S') size = 0;
   if(value == 'm' || value == 'M') size = 10;
   if(value == 'l' || value == 'L') size = 25;
-  
+
   writeBytes(29, 33, size, 10);
   // if (linefeedneeded)
   //  println("lfn"); //feed();
   //linefeedneeded = false;
 }
 
-void Thermal::underlineOff() {
-  writeBytes(27, 45, 0, 10);
-}
-void Thermal::underlineOn() {
-  writeBytes(27, 45, 1);
+// Underlines of different weights can be produced:
+// 0 - no underline
+// 1 - normal underline
+// 2 - thick underline
+void Thermal::underlineOn(uint8_t weight) {
+  writeBytes(27, 45, weight);
 }
 
-void Thermal::printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap) {
-  writeBytes(18, 42, h, w/8);
-  for (int i=0; i<(w/8) * h; i++) {
-#if ARDUINO >= 100
-    _printer->write(pgm_read_byte(bitmap + i));
-#else
-    _printer->print(pgm_read_byte(bitmap + i), BYTE);
-#endif
+void Thermal::underlineOff() {
+  underlineOn(0);
+}
+
+void Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
+  if (w > 384) return; // maximum width of the printer
+  for (int rowStart=0; rowStart < h; rowStart += 256) {
+    int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
+    printBitmapChunk(w, chunkHeight, rowStart*(w/8), bitmap);
   }
 }
 
+void Thermal::printBitmapChunk(int w, uint8_t h, int offset, const uint8_t *bitmap) {
+  writeBytes(18, 42);
+  writeBytes(h, w/8);
+  for (int i=0; i<((w/8)*h); i++) {
+    PRINTER_PRINT(pgm_read_byte(bitmap + offset + i));
+  }
+}
 
-void Thermal::wake(){
+// Take the printer offline. Print commands sent after this will be
+// ignored until `online` is called
+void Thermal::offline(){
+  writeBytes(27, 61, 0);
+}
+
+// Take the printer back online. Subsequent print commands will be
+// obeyed.
+void Thermal::online(){
   writeBytes(27, 61, 1);
 }
 
-void Thermal::sleep(){
-  writeBytes(27, 61, 0);
+// Put the printer into a low-energy state immediately
+void Thermal::sleep() {
+  sleepAfter(0);
+}
+
+// Put the printer into a low-energy state after the given number
+// of seconds
+void Thermal::sleepAfter(uint8_t seconds) {
+  writeBytes(27, 56, seconds);
+}
+
+// Wake the printer from a low-energy state. This command will wait
+// for 50ms (as directed by the datasheet) before allowing further
+// commands to be send.
+void Thermal::wake() {
+  writeBytes(255);
+  delay(50);
 }
 
 ////////////////////// not working?
 void Thermal::tab(){
-#if ARDUINO >= 100
-  _printer->write(9);
-#else
-  _printer->print(9, BYTE);
-#endif
+  PRINTER_PRINT(9);
 }
 void Thermal::setCharSpacing(int spacing) {
   writeBytes(27, 32, 0, 10);
