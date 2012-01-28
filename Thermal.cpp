@@ -261,7 +261,7 @@ void Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
   if (w > 384) return; // maximum width of the printer
   for (int rowStart=0; rowStart < h; rowStart += 256) {
     int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
-    printBitmapChunk(w, chunkHeight, rowStart*w, bitmap);
+    printBitmapChunk(w, chunkHeight, rowStart*(w/8), bitmap);
   }
 }
 
