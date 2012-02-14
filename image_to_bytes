@@ -26,7 +26,7 @@ bytes = []; bits.each_slice(8) { |s| bytes << ("0" + s.join).to_i(2).to_s(16) }
 File.open(output_name + ".cpp", "w") do |f|
   width = img.columns
   height = img.rows
-  f.puts "// output with printer.printBitmap(#{width}, #{height}, image);"
+  f.puts "/*\nprinter.printBitmap(#{width}, #{height}, image);\n*/"
   f.puts "static unsigned char __attribute__ ((progmem)) image [] = {"
   bytes.each_slice(width / 8) { |slice| f.puts slice.map { |s| "0x"+s.rjust(2, "0") }.join(",") + ",//" }
   f.puts "};"
