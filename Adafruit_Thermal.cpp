@@ -25,7 +25,6 @@
 Adafruit_Thermal::Adafruit_Thermal(int RX_Pin, int TX_Pin) {
   _RX_Pin = RX_Pin;
   _TX_Pin = TX_Pin;
-
 }
 
 void Adafruit_Thermal::begin() {
@@ -44,21 +43,19 @@ void Adafruit_Thermal::begin() {
   // (A more robust approach might be to wait in a loop
   // issuing status commands until valid response.)
   delay(500);
-  
-  heatTime = 150; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
+
+  heatTime = 240; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
   heatInterval = 2; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
-  
-  
+
 #if ARDUINO >= 100
   _printer->write(27);
   _printer->write(55);
-  _printer->write(7); //Default 64 dots = 8*('7'+1)
+  _printer->write(16); //Default 64 dots = 8*('7'+1)
   _printer->write(heatTime); //Default 80 or 800us
   _printer->write(heatInterval); //Default 2 or 20us
-  
-  
+
   //Modify the print density and timeout
   _printer->write(18);
   _printer->write(35);
@@ -68,11 +65,10 @@ void Adafruit_Thermal::begin() {
 #else
   _printer->print(27, BYTE);
   _printer->print(55, BYTE);
-  _printer->print(7, BYTE); //Default 64 dots = 8*('7'+1)
+  _printer->print(16, BYTE); //Default 64 dots = 8*('7'+1)
   _printer->print(heatTime, BYTE); //Default 80 or 800us
   _printer->print(heatInterval, BYTE); //Default 2 or 20us
-  
-  
+
   //Modify the print density and timeout
   _printer->print(18, BYTE);
   _printer->print(35, BYTE);
