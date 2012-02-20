@@ -35,6 +35,15 @@ void Adafruit_Thermal::begin() {
   _printer = new NewSoftSerial (_RX_Pin, _TX_Pin);
 #endif
   _printer->begin(19200);
+
+  // The printer can't start receiving data immediately
+  // upon power up -- needs a moment to initialize.  If
+  // Arduino & printer are powered from the same supply,
+  // they're starting simultaneously.  Need to pause for
+  // a moment so the printer is ready for commands.
+  // (A more robust approach might be to wait in a loop
+  // issuing status commands until valid response.)
+  delay(500);
   
   heatTime = 80; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
   heatInterval = 2; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
