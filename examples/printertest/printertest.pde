@@ -1,17 +1,31 @@
+/*************************************************** 
+  This is an example sketch for the Adafruit Thermal Printer
+  
+  Pick one up at --> http://www.adafruit.com/products/597
+  These printers use TTL serial to communicate, 2 pins are required
+
+  Adafruit invests time and resources providing this open source code, 
+  please support Adafruit and open-source hardware by purchasing 
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
+
+
 #if ARDUINO >= 100
  #include "SoftwareSerial.h"
 #else
  #include "NewSoftSerial.h"
 #endif
-#include "Thermal.h"
+#include "Adafruit_Thermal.h"
 #include "adalogo.cpp"
 #include "adaqrcode.cpp"
 
 int printer_RX_Pin = 2;  // this is the green wire
 int printer_TX_Pin = 3;  // this is the yellow wire
 
-Thermal printer(printer_RX_Pin, printer_TX_Pin);
-
+Adafruit_Thermal printer(printer_RX_Pin, printer_TX_Pin);
 
 
 void setup(){
