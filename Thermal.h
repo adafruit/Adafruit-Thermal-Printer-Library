@@ -1,3 +1,17 @@
+/*************************************************** 
+  This is a library for the Adafruit Thermal Printer
+  
+  Pick one up at --> http://www.adafruit.com/products/597
+  These printers use TTL serial to communicate, 2 pins are required
+
+  Adafruit invests time and resources providing this open source code, 
+  please support Adafruit and open-source hardware by purchasing 
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
+
 #ifndef Thermal_h
 #define Thermal_h
 
@@ -23,10 +37,10 @@
 #define MSI 10
 
 
-class Thermal : public Print {
+class Adafruit_Thermal : public Print {
   public:
 
-    Thermal(int RX_Pin, int TX_Pin);  // constructor
+  Adafruit_Thermal(int RX_Pin, int TX_Pin);  // constructor
     void begin();
     void setDefault();
     void test();

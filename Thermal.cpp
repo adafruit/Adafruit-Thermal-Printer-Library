@@ -1,19 +1,34 @@
+/*************************************************** 
+  This is a library for the Adafruit Thermal Printer
+  
+  Pick one up at --> http://www.adafruit.com/products/597
+  These printers use TTL serial to communicate, 2 pins are required
+
+  Adafruit invests time and resources providing this open source code, 
+  please support Adafruit and open-source hardware by purchasing 
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  MIT license, all text above must be included in any redistribution
+ ****************************************************/
+
+
 #if ARDUINO >= 100
  #include "Arduino.h"
 #else
  #include "WProgram.h"
  #include "WConstants.h"
 #endif
-#include "Thermal.h"
+#include "Adafruit_Thermal.h"
 #include <avr/pgmspace.h>
 
-Thermal::Thermal(int RX_Pin, int TX_Pin) {
+Adafruit_Thermal::Adafruit_Thermal(int RX_Pin, int TX_Pin) {
   _RX_Pin = RX_Pin;
   _TX_Pin = TX_Pin;
 
 }
 
-void Thermal::begin() {
+void Adafruit_Thermal::begin() {
 #if ARDUINO >= 100
   _printer = new SoftwareSerial (_RX_Pin, _TX_Pin);
 #else
@@ -21,8 +36,8 @@ void Thermal::begin() {
 #endif
   _printer->begin(19200);
   
-  heatTime = 120; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
-  heatInterval = 50; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
+  heatTime = 80; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
+  heatInterval = 2; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   
@@ -60,7 +75,7 @@ void Thermal::begin() {
   setDefault();
 }
 
-void Thermal::setDefault(){
+void Adafruit_Thermal::setDefault(){
   wake();
   justify('L');
   inverseOff();
@@ -73,7 +88,7 @@ void Thermal::setDefault(){
 }
 
 
-void Thermal::test(){
+void Adafruit_Thermal::test(){
   println("Hello World!");
   feed(2);
 }
@@ -81,10 +96,10 @@ void Thermal::test(){
 // this is the basic function for all printing, the rest is taken care of by the
 // inherited Print class!
 #if ARDUINO >= 100
-size_t Thermal::write(uint8_t c) {
+size_t Adafruit_Thermal::write(uint8_t c) {
   if (c == 0x13) return 0;
 #else
-void Thermal::write(uint8_t c) {
+void Adafruit_Thermal::write(uint8_t c) {
   if (c == 0x13) return;
 #endif
   if (c != 0xA)  
@@ -109,12 +124,12 @@ void Thermal::write(uint8_t c) {
 #endif
 }
 
-void Thermal::setBarcodeHeight(int val){
+void Adafruit_Thermal::setBarcodeHeight(int val){
   //default is 50
   writeBytes(29, 104, val);
 }
 
-void Thermal::printBarcode(char * text, uint8_t type) {
+void Adafruit_Thermal::printBarcode(char * text, uint8_t type) {
   writeBytes(29, 107, type); // set the type first
   for(uint16_t i = 0; i < strlen(text); i ++){
     write(text[i]); //Data
@@ -126,7 +141,7 @@ void Thermal::printBarcode(char * text, uint8_t type) {
 }
 
 
-void Thermal::writeBytes(uint8_t a, uint8_t b) {
+void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b) {
 #if ARDUINO >= 100
   _printer->write(a);
   _printer->write(b);
@@ -136,7 +151,7 @@ void Thermal::writeBytes(uint8_t a, uint8_t b) {
 #endif
 }
 
-void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
+void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
 #if ARDUINO >= 100
   _printer->write(a);
   _printer->write(b);
@@ -148,7 +163,7 @@ void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
 #endif
 }
 
-void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
+void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 #if ARDUINO >= 100
   _printer->write(a);
   _printer->write(b);
@@ -162,35 +177,35 @@ void Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 #endif
 }
 
-void Thermal::inverseOn(){
+void Adafruit_Thermal::inverseOn(){
   writeBytes(29, 'B', 1);
 }
 
-void Thermal::inverseOff(){
+void Adafruit_Thermal::inverseOff(){
   writeBytes(29, 'B', 0, 10);
 }
 
-void Thermal::doubleHeightOn(){
+void Adafruit_Thermal::doubleHeightOn(){
   writeBytes(27, 14);
 }
 
-void Thermal::doubleHeightOff(){
+void Adafruit_Thermal::doubleHeightOff(){
   writeBytes(27, 20);
 }
 
 
-void Thermal::boldOn(){
+void Adafruit_Thermal::boldOn(){
   writeBytes(27, 69, 1);
 }
 
-void Thermal::boldOff(){
+void Adafruit_Thermal::boldOff(){
   writeBytes(27, 69, 0);
   if (linefeedneeded)
     feed();
   linefeedneeded = false;
 }
 
-void Thermal::justify(char value){
+void Adafruit_Thermal::justify(char value){
   uint8_t pos = 0;
 	
   if(value == 'l' || value == 'L') pos = 0;
@@ -201,12 +216,12 @@ void Thermal::justify(char value){
 }
 
 
-void Thermal::feed(uint8_t x){
+void Adafruit_Thermal::feed(uint8_t x){
   while (x--)
     write('\n');
 }
 
-void Thermal::setSize(char value){
+void Adafruit_Thermal::setSize(char value){
   int size = 0;
   
   if(value == 's' || value == 'S') size = 0;
@@ -219,14 +234,14 @@ void Thermal::setSize(char value){
   //linefeedneeded = false;
 }
 
-void Thermal::underlineOff() {
+void Adafruit_Thermal::underlineOff() {
   writeBytes(27, 45, 0, 10);
 }
-void Thermal::underlineOn() {
+void Adafruit_Thermal::underlineOn() {
   writeBytes(27, 45, 1);
 }
 
-void Thermal::printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap) {
+void Adafruit_Thermal::printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap) {
   writeBytes(18, 42, h, w/8);
   for (int i=0; i<(w/8) * h; i++) {
 #if ARDUINO >= 100
@@ -238,26 +253,26 @@ void Thermal::printBitmap(uint8_t w, uint8_t h,  const uint8_t *bitmap) {
 }
 
 
-void Thermal::wake(){
+void Adafruit_Thermal::wake(){
   writeBytes(27, 61, 1);
 }
 
-void Thermal::sleep(){
+void Adafruit_Thermal::sleep(){
   writeBytes(27, 61, 0);
 }
 
 ////////////////////// not working?
-void Thermal::tab(){
+void Adafruit_Thermal::tab(){
 #if ARDUINO >= 100
   _printer->write(9);
 #else
   _printer->print(9, BYTE);
 #endif
 }
-void Thermal::setCharSpacing(int spacing) {
+void Adafruit_Thermal::setCharSpacing(int spacing) {
   writeBytes(27, 32, 0, 10);
 }
-void Thermal::setLineHeight(int val){
+void Adafruit_Thermal::setLineHeight(int val){
   writeBytes(27, 51, val); // default is 32
 }
 /////////////////////////
