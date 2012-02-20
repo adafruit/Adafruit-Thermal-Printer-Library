@@ -13,17 +13,17 @@
  ****************************************************/
 
 
-#if ARDUINO >= 100
- #include "SoftwareSerial.h"
-#else
- #include "NewSoftSerial.h"
-#endif
+// if you're using Arduino 1.0 uncomment the next line
+#include "SoftwareSerial.h"
+// if you're using Arduino 23 or earlier, uncomment the next line
+//#include "NewSoftSerial.h"
+
 #include "Adafruit_Thermal.h"
 #include "adalogo.cpp"
 #include "adaqrcode.cpp"
 
-int printer_RX_Pin = 2;  // this is the green wire
-int printer_TX_Pin = 3;  // this is the yellow wire
+int printer_RX_Pin = 5;  // this is the green wire
+int printer_TX_Pin = 6;  // this is the yellow wire
 
 Adafruit_Thermal printer(printer_RX_Pin, printer_TX_Pin);
 
