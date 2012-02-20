@@ -45,7 +45,7 @@ void Adafruit_Thermal::begin() {
   // issuing status commands until valid response.)
   delay(500);
   
-  heatTime = 80; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
+  heatTime = 150; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
   heatInterval = 2; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
@@ -116,13 +116,13 @@ void Adafruit_Thermal::write(uint8_t c) {
   else
     linefeedneeded = false;
 
-  Serial.print(" 0x");
-  Serial.print(c, HEX);
+  //Serial.print(" 0x");
+  //Serial.print(c, HEX);
 #if ARDUINO >= 100
-  Serial.print(" ("); Serial.write(c); Serial.println(")");
+  //Serial.print(" ("); Serial.write(c); Serial.println(")");
   _printer->write(c);
 #else
-  Serial.print(" ("); Serial.print(c, BYTE); Serial.println(")");
+  //Serial.print(" ("); Serial.print(c, BYTE); Serial.println(")");
   _printer->print(c);
 #endif
 
