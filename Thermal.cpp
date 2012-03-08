@@ -261,17 +261,38 @@ void Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
   if (w > 384) return; // maximum width of the printer
   for (int rowStart=0; rowStart < h; rowStart += 256) {
     int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
-    printBitmapChunk(w, chunkHeight, rowStart*(w/8), bitmap);
+    writeBytes(18, 42);
+    writeBytes(chunkHeight, w/8);
+    for (int i=0; i<((w/8)*chunkHeight); i++) {
+      PRINTER_PRINT(pgm_read_byte(bitmap + (rowStart*(w/8)) + i));
+    }
   }
 }
 
-void Thermal::printBitmapChunk(int w, uint8_t h, int offset, const uint8_t *bitmap) {
-  writeBytes(18, 42);
-  writeBytes(h, w/8);
-  for (int i=0; i<((w/8)*h); i++) {
-    PRINTER_PRINT(pgm_read_byte(bitmap + offset + i));
+void Thermal::printBitmap(int w, int h, Stream *stream) {
+  if (w > 384) return; // maximum width of the printer
+  for (int rowStart=0; rowStart < h; rowStart += 256) {
+    int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
+    writeBytes(18, 42);
+    writeBytes(chunkHeight, w/8);
+    for (int i=0; i<((w/8)*chunkHeight); i++) {
+      PRINTER_PRINT((uint8_t)stream->read());
+    }
   }
-}
+};
+
+void Thermal::printBitmap(Stream *stream) {
+  uint8_t tmp;
+  uint16_t width, height;
+
+  tmp = stream->read();
+  width = (stream->read() << 8) + tmp;
+
+  tmp = stream->read();
+  height = (stream->read() << 8) + tmp;
+
+  printBitmap(width, height, stream);
+};
 
 // Take the printer offline. Print commands sent after this will be
 // ignored until `online` is called
