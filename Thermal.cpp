@@ -13,12 +13,16 @@ Thermal::Thermal(int RX_Pin, int TX_Pin) {
 }
 
 void Thermal::begin() {
+  begin(150);
+}
+
+// headTime - 80 is default from page 23 of datasheet. Controls speed of printing and darkness
+void Thermal::begin(int heatTime) {
   _printer = new SERIAL_IMPL(_RX_Pin, _TX_Pin);
   _printer->begin(19200);
 
   reset();
 
-  heatTime = 120; //80 is default from page 23 of datasheet. Controls speed of printing and darkness
   heatInterval = 50; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
   printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
   printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.

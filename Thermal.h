@@ -36,6 +36,7 @@ class Thermal : public Print {
 
     Thermal(int RX_Pin, int TX_Pin);  // constructor
     void begin();
+    void begin(int heatTime);
     void reset();
     void setDefault();
     void test();
