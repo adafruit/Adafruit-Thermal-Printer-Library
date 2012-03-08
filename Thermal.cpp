@@ -16,7 +16,7 @@ void Thermal::begin() {
   begin(150);
 }
 
-// headTime - 80 is default from page 23 of datasheet. Controls speed of printing and darkness
+// heatTime - 80 is default from page 23 of datasheet. Controls speed of printing and darkness
 void Thermal::begin(int heatTime) {
   _printer = new SERIAL_IMPL(_RX_Pin, _TX_Pin);
   _printer->begin(19200);
