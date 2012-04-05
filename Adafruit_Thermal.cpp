@@ -36,6 +36,15 @@ void Adafruit_Thermal::begin(int heatTime) {
   _printer = new SERIAL_IMPL(_RX_Pin, _TX_Pin);
   _printer->begin(19200);
 
+  // The printer can't start receiving data immediately
+  // upon power up -- needs a moment to initialize.  If
+  // Arduino & printer are powered from the same supply,
+  // they're starting simultaneously.  Need to pause for
+  // a moment so the printer is ready for commands.
+  // (A more robust approach might be to wait in a loop
+  // issuing status commands until valid response.)
+  delay(500);
+
   reset();
 
   heatInterval = 50; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
@@ -117,11 +126,16 @@ void Adafruit_Thermal::setBarcodeHeight(int val){
 }
 
 void Adafruit_Thermal::printBarcode(char * text, uint8_t type) {
+  int i;
+  byte c;
+
+  delay(1000); // Need these delays else barcode doesn't always print. ???
   writeBytes(29, 107, type); // set the type first
-  for(uint16_t i = 0; i < strlen(text); i ++){
-    write(text[i]); //Data
-  }
-  write(0); //Terminator
+  delay(500);
+  // Copy string, not including NUL terminator
+  for(i=0; (c = text[i]); i++) PRINTER_PRINT(c);
+  delay(500);
+  PRINTER_PRINT(c); // Terminator must follow delay. ???
 
   delay(3000); //For some reason we can't immediately have line feeds here
   feed(2);
@@ -280,11 +294,14 @@ void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
   if (w > 384) return; // maximum width of the printer
   for (int rowStart=0; rowStart < h; rowStart += 256) {
     int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
+    delay(500); // Need these delays else bitmap doesn't always print. ???
     writeBytes(18, 42);
     writeBytes(chunkHeight, w/8);
+    delay(500);
     for (int i=0; i<((w/8)*chunkHeight); i++) {
       PRINTER_PRINT(pgm_read_byte(bitmap + (rowStart*(w/8)) + i));
     }
+    delay(500);
   }
 }
 
@@ -292,11 +309,14 @@ void Adafruit_Thermal::printBitmap(int w, int h, Stream *stream) {
   if (w > 384) return; // maximum width of the printer
   for (int rowStart=0; rowStart < h; rowStart += 256) {
     int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
+    delay(500); // Need these delays else bitmap doesn't always print. ???
     writeBytes(18, 42);
     writeBytes(chunkHeight, w/8);
+    delay(500);
     for (int i=0; i<((w/8)*chunkHeight); i++) {
       PRINTER_PRINT((uint8_t)stream->read());
     }
+    delay(500);
   }
 };
 

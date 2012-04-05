@@ -30,6 +30,7 @@ Adafruit_Thermal printer(printer_RX_Pin, printer_TX_Pin);
 
 void setup(){
   Serial.begin(9600);
+  printer.begin();
   
   ////////////////////////////////////////////////////////////////////
   //Following are in setup, but do not need to be. Use them anywhere. 
@@ -40,14 +41,11 @@ void setup(){
   ////////////////////////////////////////////////////////////////////
  
   // test inverse on & off
-  printer.begin();
-
   printer.inverseOn();
-  printer.print("inverse ON");
-  printer.inverseOff();  // this adds a line feed
- 
+  printer.println("Inverse ON");
+  printer.inverseOff();
 
-  // test character double width on & off
+  // test character double height on & off
   printer.doubleHeightOn();
   printer.println("Double Height ON");
   printer.doubleHeightOff();
@@ -61,12 +59,12 @@ void setup(){
   printer.println("Left justified");
   
   printer.boldOn();
-  printer.print("Bolded text");
-  printer.boldOff();  // this adds a line feed
+  printer.println("Bold text");
+  printer.boldOff();
   
   printer.underlineOn(); 
-  printer.print("Underlined text ");
-  printer.underlineOff();   // adds a linefeed
+  printer.println("Underlined text ");
+  printer.underlineOff();
 
   printer.setSize('L');      // set type size, accepts 'S', 'M', 'L'
   printer.print("Large");    // print line
@@ -82,26 +80,23 @@ void setup(){
   printer.setLineHeight();    // reset to default
   printer.justify('L');  
 
-  delay(1000);
+  printer.feed(1);
   printer.printBarcode("ADAFRUIT", CODE39); // print a code39, most common alphanumeric barcode
   printer.setBarcodeHeight(100);
   printer.printBarcode("123456789123", UPC_A); // print UPC line on product barcodes
-  delay(1000);
 
   // print the 57x57 pixel logo included in adalogo.cpp
   printer.printBitmap(57, 57, adalogo);
   
   // print the 135 x 135 pixel QR code in adaqrcode.cpp
   printer.printBitmap(135, 135, adaqr);
-  printer.print("Adafruit!");
+  printer.println("Adafruit!");
+  printer.feed(1);
 
   printer.sleep(); //Tell printer to sleep. MUST call wake before printing again, even if reset
   printer.wake(); //Wake printer.
-  
-  printer.setDefault(); //set printer to defaults. ****WILL FEED SEVERAL LINES WHEN CALLED***
+  printer.setDefault(); //restore printer to defaults
 }
 
 void loop(){
-  
-  
 }
