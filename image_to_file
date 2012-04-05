@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+=begin
+This script uses imagemagick and RMagick to produce a dithered version of an
+image, and then produces a cpp file containing an array of bytes suitable
+for printing.
+
+The cpp files also contain a comment which is useful to visualise the printed
+output; I suggest you open it in a text editor and shrink the fontsize until 
+each row of characters fits on the screen without wrapping.
+=end
+
+require "rubygems"
+require "bundler/setup"
+require "RMagick"
+include Magick
+
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options] <input_image> [<output_name>]"
+
+  opts.on("-s", "--skip-header", "Don't include the dimensions header") do |s|
+    options[:skip_header] = true
+  end
+end.parse!
+
+path = ARGV[0]
+output_name = ARGV[1] || File.join(File.dirname(path), File.basename(path).split(".")[0...-1].join)
+
+`convert -colorspace Gray -ordered-dither o2x2 #{path} #{output_name}.bmp`
+img = ImageList.new("#{output_name}.bmp")[0]
+bits = []
+width = img.columns
+height = img.rows
+img.each_pixel { |pixel, _, _| bits << (pixel.red > 0 ? 0 : 1) }
+bytes = []; bits.each_slice(8) { |s| bytes << ("0" + s.join).to_i(2) }
+File.open(output_name, "w") do |f|
+  f.write([width,height].pack("SS")) unless options[:skip_header]
+  f.write(bytes.pack("C*"))
+end
+
+puts "wrote #{bytes.length} bytes to #{output_name}"

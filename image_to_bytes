@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+=begin
+This script uses imagemagick and RMagick to produce a dithered version of an
+image, and then produces a cpp file containing an array of bytes suitable
+for printing.
+
+The cpp files also contain a comment which is useful to visualise the printed
+output; I suggest you open it in a text editor and shrink the fontsize until 
+each row of characters fits on the screen without wrapping.
+=end
+
+require "rubygems"
+require "bundler/setup"
+require "RMagick"
+include Magick
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options] <input_image> [<output_name>]"
+
+  opts.on("-d", "--dither", "Dither the image (useful for photos; less good for lineart and text)") do |s|
+    options[:dither] = true
+  end
+end.parse!
+
+path = ARGV[0]
+output_name = ARGV[1] || File.basename(path).split(".")[0...-1].join
+
+if options[:dither]
+  `convert -colorspace Gray -ordered-dither o2x2 #{path} #{output_name}.bmp`
+else
+  `convert #{path} #{output_name}.bmp`
+end
+
+img = ImageList.new("#{output_name}.bmp")[0]
+bits = []
+white = 65535
+limit = white / 2
+img.each_pixel { |pixel, _, _| bits << ((pixel.intensity < limit) ? 1 : 0) }
+bytes = []; bits.each_slice(8) { |s| bytes << ("0" + s.join).to_i(2).to_s(16) }
+File.open(output_name + ".cpp", "w") do |f|
+  width = img.columns
+  height = img.rows
+  f.puts "/*\nprinter.printBitmap(#{width}, #{height}, image);\n*/"
+  f.puts "static unsigned char __attribute__ ((progmem)) image [] = {"
+  bytes.each_slice(width / 8) { |slice| f.puts slice.map { |s| "0x"+s.rjust(2, "0") }.join(",") + ",//" }
+  f.puts "};"
+  f.puts
+  f.puts "/*"
+  bits.each_slice(width) do |slice|
+    f.puts slice.map { |b| b == 0 ? "." : "X" }.join("")
+  end
+  f.puts "*/"
+end
+
+puts "wrote #{bytes.length} bytes to #{output_name}.cpp"

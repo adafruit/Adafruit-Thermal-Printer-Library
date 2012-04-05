@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+=begin
+This script takes an ascii representation of an image (see
+sample_ascii.txt for an example) and outputs a C++ byte
+array that can be passed to Thermal::printBitmap.
+
+If only one argument is given, the array will be output
+to STDOUT; otherwise it will be written to the file given
+as the second argument.
+=end
+
+def ascii_bitmap_to_byte_array(str)
+  rows = str.split.map(&:strip)
+  dimensions = [rows.first.length, rows.length]
+  pixel_stream = rows.join
+  bytes = []
+  pixel_stream.split("").each_slice(8) do |slice|
+    bytes << slice.map { |c| c == "." ? "0" : "1" }.join.to_i(2)
+  end
+  [bytes, dimensions]
+end
+
+def output(bytes, dimensions, io=STDOUT)
+  io.puts "// image dimensions: #{dimensions.join("x")}"
+  io.puts "static unsigned char __attribute__ ((progmem)) image [] = {"
+  bytes.each_slice(dimensions[1]/8) do |slice|
+    slice_as_hex = slice.map { |byte|
+      hex = byte.to_s(16).upcase.rjust(2, "0")
+      "0x#{hex}"
+    }
+    io.print slice_as_hex.join(", ")
+    io.puts ","
+  end
+  io.puts "};"
+end
+
+str = File.read(ARGV[0])
+bytes, dimensions = ascii_bitmap_to_byte_array(str)
+
+if ARGV[1]
+  File.open(ARGV[1], "w") { |f| output(bytes, dimensions, f) }
+else
+  output(bytes, dimensions)
+end
