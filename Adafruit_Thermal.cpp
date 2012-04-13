@@ -128,14 +128,16 @@ void Adafruit_Thermal::setBarcodeHeight(int val){
 void Adafruit_Thermal::printBarcode(char * text, uint8_t type) {
   int i;
   byte c;
-
-  delay(1000); // Need these delays else barcode doesn't always print. ???
+  writeBytes(29, 72,2); //Set that numbers are printed below the Barcode. (0=not printed,  1= above, 2=below, 3=both)
+  //delay(1000); //You don't need these delays...
+  writeBytes(29, 119, 3); //Set the hoizontal size of the barcode (2 = small, 3 = big), 3 is default
   writeBytes(29, 107, type); // set the type first
-  delay(500);
+  
+  //delay(500); //NO! ! ! The Barcode won't print with this delay!
   // Copy string, not including NUL terminator
-  for(i=0; (c = text[i]); i++) PRINTER_PRINT(c);
-  delay(500);
-  PRINTER_PRINT(c); // Terminator must follow delay. ???
+  for(i=0; (c = text[i]); i++) writeBytes(c);
+  //delay(500); //Isn't needed !
+  writeBytes(0); //Just send 0 to tell the printer the data is over
 
   delay(3000); //For some reason we can't immediately have line feeds here
   feed(2);
