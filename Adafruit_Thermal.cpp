@@ -27,11 +27,6 @@ Adafruit_Thermal::Adafruit_Thermal(int RX_Pin, int TX_Pin) {
   _TX_Pin = TX_Pin;
 }
 
-void Adafruit_Thermal::begin() {
-  begin(150);
-}
-
-// heatTime - 80 is default from page 23 of datasheet. Controls speed of printing and darkness
 void Adafruit_Thermal::begin(int heatTime) {
   _printer = new SERIAL_IMPL(_RX_Pin, _TX_Pin);
   _printer->begin(19200);
@@ -47,19 +42,39 @@ void Adafruit_Thermal::begin(int heatTime) {
 
   reset();
 
-  heatInterval = 50; //2 is default from page 23 of datasheet. Controls speed of printing and darkness
-  printDensity = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
-  printBreakTime = 15; //Not sure what the defaut is. Testing shows the max helps darken text. From page 23.
+  // Description of print settings from page 23 of the manual:
+  // ESC 7 n1 n2 n3 Setting Control Parameter Command
+  // Decimal: 27 55 n1 n2 n3
+  // Set "max heating dots", "heating time", "heating interval"
+  // n1 = 0-255 Max printing dots, Unit (8dots), Default: 7 (64 dots)
+  // n2 = 3-255 Heating time, Unit (10us), Default: 80 (800us)
+  // n3 = 0-255 Heating interval, Unit (10us), Default: 2 (20us)
+  // The more max heating dots, the more peak current will cost
+  // when printing, the faster printing speed. The max heating
+  // dots is 8*(n1+1).  The more heating time, the more density,
+  // but the slower printing speed.  If heating time is too short,
+  // blank page may occur.  The more heating interval, the more
+  // clear, but the slower printing speed.
 
-  writeBytes(27, 55);
-  writeBytes(7); //Default 64 dots = 8*('7'+1)
-  writeBytes(heatTime); //Default 80 or 800us
-  writeBytes(heatInterval); //Default 2 or 20us
+  writeBytes(27, 55);   // Esc 7 (print settings)
+  writeBytes(20);       // Heating dots (20=balance of darkness vs no jams)
+  writeBytes(heatTime); // Library default = 255 (max)
+  writeBytes(250);      // Heat interval (500 uS = slower, but darker)
 
-  //Modify the print density and timeout
-  writeBytes(18, 35);
-  int printSetting = (printDensity<<4) | printBreakTime;
-  writeBytes(printSetting); //Combination of printDensity and printBreakTime
+  // Description of print density from page 23 of the manual:
+  // DC2 # n Set printing density
+  // Decimal: 18 35 n
+  // D4..D0 of n is used to set the printing density.  Density is
+  // 50% + 5% * n(D4-D0) printing density.
+  // D7..D5 of n is used to set the printing break time.  Break time
+  // is n(D7-D5)*250us.
+  // (Unsure of the default value for either -- not documented)
+
+  const int
+    printDensity   = 14, // 120% (? can go higher, text is darker but fuzzy)
+    printBreakTime = 4;  // 500 uS
+  writeBytes(18, 35); // DC2 # (print density)
+  writeBytes((printBreakTime << 5) | printDensity);
 }
 
 // reset printer
@@ -137,7 +152,7 @@ void Adafruit_Thermal::printBarcode(char * text, uint8_t type) {
   delay(500);
   PRINTER_PRINT(c); // Terminator must follow delay. ???
 
-  delay(3000); //For some reason we can't immediately have line feeds here
+  delay(3000); // For some reason we can't immediately have line feeds here
   feed(2);
 }
 

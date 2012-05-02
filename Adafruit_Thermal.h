@@ -49,8 +49,7 @@ class Adafruit_Thermal : public Print {
   public:
 
   Adafruit_Thermal(int RX_Pin, int TX_Pin);  // constructor
-    void begin();
-    void begin(int heatTime);
+    void begin(int heatTime=255);
     void reset();
     void setDefault();
     void test();
@@ -119,11 +118,6 @@ class Adafruit_Thermal : public Print {
 
     int _RX_Pin;
     int _TX_Pin;
-
-    int heatTime;
-    int heatInterval;
-    char printDensity;
-    char printBreakTime;
 };
 
 #endif
