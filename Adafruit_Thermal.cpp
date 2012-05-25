@@ -118,15 +118,6 @@ void Adafruit_Thermal::write(uint8_t c) {
   else
     linefeedneeded = false;
 
-  Serial.print(" 0x");
-  Serial.print(c, HEX);
-  Serial.print(" ("); 
-#if ARDUINO >= 100
-  Serial.write(c);
-#else
-  Serial.print(" (");
-#endif
-  Serial.println(")");
   PRINTER_PRINT(c);
   delay(1);
 
