@@ -20,6 +20,6 @@
   products from Adafruit!
 
   Written by Limor Fried/Ladyada for Adafruit Industries, based on Thermal
-  library from bildr.com 
+  library from bildr.org 
   MIT license, all text above must be included in any redistribution
  ****************************************************/
