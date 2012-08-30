@@ -391,14 +391,14 @@ void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
   rowBytes        = (w + 7) / 8; // Round up to next byte boundary
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
 
-  for(rowStart=0; rowStart < h; rowStart += 255) {
+  for(i=rowStart=0; rowStart < h; rowStart += 255) {
     // Issue up to 255 rows at a time:
     chunkHeight = h - rowStart;
     if(chunkHeight > 255) chunkHeight = 255;
 
     writeBytes(18, 42, chunkHeight, rowBytesClipped);
 
-    for(i=y=0; y < chunkHeight; y++) {
+    for(y=0; y < chunkHeight; y++) {
       for(x=0; x < rowBytesClipped; x++, i++) {
         PRINTER_PRINT(pgm_read_byte(bitmap + i));
       }
