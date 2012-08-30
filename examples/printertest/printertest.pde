@@ -17,8 +17,8 @@
 //#include "NewSoftSerial.h"
 
 #include "Adafruit_Thermal.h"
-#include "adalogo.cpp"
-#include "adaqrcode.cpp"
+#include "adalogo.h"
+#include "adaqrcode.h"
 
 int printer_RX_Pin = 5;  // This is the green wire
 int printer_TX_Pin = 6;  // This is the yellow wire
@@ -84,11 +84,11 @@ void setup(){
   // Print UPC line on product barcodes
   printer.printBarcode("123456789123", UPC_A);
 
-  // Print the 75x75 pixel logo in adalogo.cpp
-  printer.printBitmap(75, 75, adalogo);
+  // Print the 75x75 pixel logo in adalogo.h
+  printer.printBitmap(adalogo_width, adalogo_height, adalogo_data);
 
-  // Print the 135x135 pixel QR code in adaqrcode.cpp
-  printer.printBitmap(135, 135, adaqr);
+  // Print the 135x135 pixel QR code in adaqrcode.h
+  printer.printBitmap(adaqrcode_width, adaqrcode_height, adaqrcode_data);
   printer.println("Adafruit!");
   printer.feed(1);
 
