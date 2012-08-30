@@ -181,7 +181,7 @@ void Adafruit_Thermal::begin(int heatTime) {
   writeBytes(18, 35); // DC2 # (print density)
   writeBytes((printBreakTime << 5) | printDensity);
 
-  dotPrintTime = 21000; // See comments near top of file for
+  dotPrintTime = 22000; // See comments near top of file for
   dotFeedTime  =  2100; // an explanation of these values.
 }
 
@@ -237,7 +237,7 @@ void Adafruit_Thermal::printBarcode(char * text, uint8_t type) {
   do { // Copy string + NUL terminator
     writeBytes(c = text[i++]);
   } while(c);
-  timeoutSet((barcodeHeight + 32) * dotPrintTime);
+  timeoutSet((barcodeHeight + 40) * dotPrintTime);
   prevByte = '\n';
   feed(2);
 }

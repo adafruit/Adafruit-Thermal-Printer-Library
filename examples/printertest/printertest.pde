@@ -84,11 +84,11 @@ void setup(){
   // Print UPC line on product barcodes
   printer.printBarcode("123456789123", UPC_A);
 
-  // Print the 56x57 pixel logo in adalogo.cpp
-  printer.printBitmap(56, 57, adalogo);
+  // Print the 75x75 pixel logo in adalogo.cpp
+  printer.printBitmap(75, 75, adalogo);
 
-  // Print the 128x135 pixel QR code in adaqrcode.cpp
-  printer.printBitmap(128, 135, adaqr);
+  // Print the 135x135 pixel QR code in adaqrcode.cpp
+  printer.printBitmap(135, 135, adaqr);
   printer.println("Adafruit!");
   printer.feed(1);
 
