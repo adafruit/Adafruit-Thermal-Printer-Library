@@ -1,17 +1,15 @@
-/*************************************************** 
-  This is a library for the Adafruit Thermal Printer
-  
+/*************************************************************************
+  This is an Arduino library for the Adafruit Thermal Printer.
   Pick one up at --> http://www.adafruit.com/products/597
-  These printers use TTL serial to communicate, 2 pins are required
+  These printers use TTL serial to communicate, 2 pins are required.
 
-  Adafruit invests time and resources providing this open source code, 
-  please support Adafruit and open-source hardware by purchasing 
-  products from Adafruit!
+  Adafruit invests time and resources providing this open source code.
+  Please support Adafruit and open-source hardware by purchasing products
+  from Adafruit!
 
-  Written by Limor Fried/Ladyada for Adafruit Industries.  
-  MIT license, all text above must be included in any redistribution
- ****************************************************/
-
+  Written by Limor Fried/Ladyada for Adafruit Industries.
+  MIT license, all text above must be included in any redistribution.
+ *************************************************************************/
 
 #if ARDUINO >= 100
  #include "Arduino.h"
@@ -20,25 +18,132 @@
  #include "WConstants.h"
 #endif
 #include "Adafruit_Thermal.h"
-#include <avr/pgmspace.h>
 
+// Though most of these printers are factory configured for 19200 baud
+// operation, a few rare specimens instead work at 9600.  If so, change
+// this constant.  This will NOT make printing slower!  The physical
+// print and feed mechanisms are the limiting factor, not the port speed.
+#define BAUDRATE  19200
+
+// Number of microseconds to issue one byte to the printer.  11 bits
+// (not 8) to accommodate idle, start and stop bits.  Idle time might
+// be unnecessary, but erring on side of caution here.
+#define BYTE_TIME (11L * 1000000L / BAUDRATE)
+
+// Because there's no flow control between the printer and Arduino,
+// special care must be taken to avoid overrunning the printer's buffer.
+// Serial output is throttled based on serial speed as well as an estimate
+// of the device's print and feed rates (relatively slow, being bound to
+// moving parts and physical reality).  After an operation is issued to
+// the printer (e.g. bitmap print), a timeout is set before which any
+// other printer operations will be suspended.  This is generally more
+// efficient than using delay() in that it allows the parent code to
+// continue with other duties (e.g. receiving or decoding an image)
+// while the printer physically completes the task.
+
+// This method sets the estimated completion time for a just-issued task.
+void Adafruit_Thermal::timeoutSet(unsigned long x) {
+  resumeTime = micros() + x;
+}
+
+// This function waits (if necessary) for the prior task to complete.
+void Adafruit_Thermal::timeoutWait() {
+  while((long)(micros() - resumeTime) < 0); // Rollover-proof
+}
+
+// Printer performance may vary based on the power supply voltage,
+// thickness of paper, phase of the moon and other seemingly random
+// variables.  This method sets the times (in microseconds) for the
+// paper to advance one vertical 'dot' when printing and feeding.
+// For example, in the default initialized state, normal-sized text is
+// 24 dots tall and the line spacing is 32 dots, so the time for one
+// line to be issued is approximately 24 * print time + 8 * feed time.
+// The default print and feed times are based on a random test unit,
+// but as stated above your reality may be influenced by many factors.
+// This lets you tweak the timing to avoid excessive delays and/or
+// overrunning the printer buffer.
+void Adafruit_Thermal::setTimes(unsigned long p, unsigned long f) {
+  dotPrintTime = p;
+  dotFeedTime  = f;
+}
+
+// Constructor
 Adafruit_Thermal::Adafruit_Thermal(int RX_Pin, int TX_Pin) {
   _RX_Pin = RX_Pin;
   _TX_Pin = TX_Pin;
 }
 
+// The next four helper methods are used when issuing configuration
+// commands, printing bitmaps or barcodes, etc.  Not when printing text.
+
+void Adafruit_Thermal::writeBytes(uint8_t a) {
+  timeoutWait();
+  PRINTER_PRINT(a);
+  timeoutSet(BYTE_TIME);
+}
+
+void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b) {
+  timeoutWait();
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
+  timeoutSet(2 * BYTE_TIME);
+}
+
+void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
+  timeoutWait();
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
+  PRINTER_PRINT(c);
+  timeoutSet(3 * BYTE_TIME);
+}
+
+void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
+  timeoutWait();
+  PRINTER_PRINT(a);
+  PRINTER_PRINT(b);
+  PRINTER_PRINT(c);
+  PRINTER_PRINT(d);
+  timeoutSet(3 * BYTE_TIME);
+}
+
+// The underlying method for all high-level printing (e.g. println()).
+// The inherited Print class handles the rest!
+#if ARDUINO >= 100
+size_t Adafruit_Thermal::write(uint8_t c) {
+#else
+void Adafruit_Thermal::write(uint8_t c) {
+#endif
+
+  if(c != 0x13) { // Strip carriage returns
+    timeoutWait();
+    PRINTER_PRINT(c);
+    unsigned long d = BYTE_TIME;
+    if((c == '\n') || (column == maxColumn)) { // If newline or wrap
+      d += (prevByte == '\n') ?
+        ((charHeight+lineSpacing) * dotFeedTime) :             // Feed line
+        ((charHeight*dotPrintTime)+(lineSpacing*dotFeedTime)); // Text line
+      column = 0;
+      c      = '\n'; // Treat wrap as newline on next pass
+    } else {
+      column++;
+    }
+    timeoutSet(d);
+    prevByte = c;
+  }
+
+#if ARDUINO >= 100
+  return 1;
+#endif
+}
+
 void Adafruit_Thermal::begin(int heatTime) {
   _printer = new SERIAL_IMPL(_RX_Pin, _TX_Pin);
-  _printer->begin(19200);
+  _printer->begin(BAUDRATE);
 
-  // The printer can't start receiving data immediately
-  // upon power up -- needs a moment to initialize.  If
-  // Arduino & printer are powered from the same supply,
-  // they're starting simultaneously.  Need to pause for
-  // a moment so the printer is ready for commands.
-  // (A more robust approach might be to wait in a loop
-  // issuing status commands until valid response.)
-  delay(500);
+  // The printer can't start receiving data immediately upon power up --
+  // it needs a moment to cold boot and initialize.  Allow at least 1/2
+  // sec of uptime before printer can receive data.
+  timeoutSet(500000);
 
   reset();
 
@@ -70,19 +175,28 @@ void Adafruit_Thermal::begin(int heatTime) {
   // is n(D7-D5)*250us.
   // (Unsure of the default value for either -- not documented)
 
-  const int
-    printDensity   = 14, // 120% (? can go higher, text is darker but fuzzy)
-    printBreakTime = 4;  // 500 uS
+#define printDensity   14 // 120% (? can go higher, text is darker but fuzzy)
+#define printBreakTime  4 // 500 uS
+
   writeBytes(18, 35); // DC2 # (print density)
   writeBytes((printBreakTime << 5) | printDensity);
+
+  dotPrintTime = 21000; // See comments near top of file for
+  dotFeedTime  =  2100; // an explanation of these values.
 }
 
-// reset printer
+// Reset printer to default state.
 void Adafruit_Thermal::reset() {
+  prevByte      = '\n'; // Treat as if prior line is blank
+  column        = 0;
+  maxColumn     = 32;
+  charHeight    = 24;
+  lineSpacing   = 8;
+  barcodeHeight = 50;
   writeBytes(27, 64);
 }
 
-// reset formatting
+// Reset text formatting parameters.
 void Adafruit_Thermal::setDefault(){
   online();
   justify('L');
@@ -102,87 +216,46 @@ void Adafruit_Thermal::test(){
 
 void Adafruit_Thermal::testPage() {
   writeBytes(18, 84);
+  timeoutSet(
+    dotPrintTime * 24 * 26 +      // 26 lines w/text (ea. 24 dots high)
+    dotFeedTime * (8 * 26 + 32)); // 26 text lines (feed 8 dots) + blank line
 }
 
-// this is the basic function for all printing, the rest is taken care of by the
-// inherited Print class!
-#if ARDUINO >= 100
-size_t Adafruit_Thermal::write(uint8_t c) {
-  if (c == 0x13) return 0;
-#else
-void Adafruit_Thermal::write(uint8_t c) {
-  if (c == 0x13) return;
-#endif
-  if (c != 0xA)
-    linefeedneeded = true;
-  else
-    linefeedneeded = false;
-
-  PRINTER_PRINT(c);
-  delay(1);
-
-#if ARDUINO >= 100
-  return 1;
-#endif
-}
-
-void Adafruit_Thermal::setBarcodeHeight(int val){
-  //default is 50
+void Adafruit_Thermal::setBarcodeHeight(int val) { // Default is 50
+  if(val < 1) val = 1;
+  barcodeHeight = val;
   writeBytes(29, 104, val);
 }
 
 void Adafruit_Thermal::printBarcode(char * text, uint8_t type) {
-  int i;
+  int  i = 0;
   byte c;
-  writeBytes(29, 72,2); //Set that numbers are printed below the Barcode. (0=not printed,  1= above, 2=below, 3=both)
-  //delay(1000); //You don't need these delays...
-  writeBytes(29, 119, 3); //Set the hoizontal size of the barcode (2 = small, 3 = big), 3 is default
-  writeBytes(29, 107, type); // set the type first
-  
-  //delay(500); //NO! ! ! The Barcode won't print with this delay!
-  // Copy string, not including NUL terminator
-  for(i=0; (c = text[i]); i++) writeBytes(c);
-  //delay(500); //Isn't needed !
-  writeBytes(0); //Just send 0 to tell the printer the data is over
 
-  delay(3000); // For some reason we can't immediately have line feeds here
+  writeBytes(29,  72, 2);    // Print label below barcode
+  writeBytes(29, 119, 3);    // Barcode width
+  writeBytes(29, 107, type); // Barcode type (listed in .h file)
+  do { // Copy string + NUL terminator
+    writeBytes(c = text[i++]);
+  } while(c);
+  timeoutSet((barcodeHeight + 32) * dotPrintTime);
+  prevByte = '\n';
   feed(2);
-}
-
-void Adafruit_Thermal::writeBytes(uint8_t a) {
-  PRINTER_PRINT(a);
-}
-
-void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b) {
-  PRINTER_PRINT(a);
-  PRINTER_PRINT(b);
-}
-
-void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
-  PRINTER_PRINT(a);
-  PRINTER_PRINT(b);
-  PRINTER_PRINT(c);
-}
-
-void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-  PRINTER_PRINT(a);
-  PRINTER_PRINT(b);
-  PRINTER_PRINT(c);
-  PRINTER_PRINT(d);
 }
 
 // === Character commands ===
 
-#define INVERSE_MASK (1 << 1)
-#define UPDOWN_MASK (1 << 2)
-#define BOLD_MASK (1 << 3)
+#define INVERSE_MASK       (1 << 1)
+#define UPDOWN_MASK        (1 << 2)
+#define BOLD_MASK          (1 << 3)
 #define DOUBLE_HEIGHT_MASK (1 << 4)
-#define DOUBLE_WIDTH_MASK (1 << 5)
-#define STRIKE_MASK (1 << 6)
+#define DOUBLE_WIDTH_MASK  (1 << 5)
+#define STRIKE_MASK        (1 << 6)
 
 void Adafruit_Thermal::setPrintMode(uint8_t mask) {
   printMode |= mask;
   writePrintMode();
+  charHeight = (printMode & DOUBLE_HEIGHT_MASK) ? 24 : 48;
+  maxColumn  = (printMode & DOUBLE_WIDTH_MASK ) ? 16 : 32;
 }
 void Adafruit_Thermal::unsetPrintMode(uint8_t mask) {
   printMode &= ~mask;
@@ -249,24 +322,26 @@ void Adafruit_Thermal::boldOff(){
 void Adafruit_Thermal::justify(char value){
   uint8_t pos = 0;
 
-  if(value == 'l' || value == 'L') pos = 0;
-  if(value == 'c' || value == 'C') pos = 1;
-  if(value == 'r' || value == 'R') pos = 2;
+  switch(toupper(value)) {
+    case 'L': pos = 0; break;
+    case 'C': pos = 1; break;
+    case 'R': pos = 2; break;
+  }
 
   writeBytes(0x1B, 0x61, pos);
 }
 
 // Feeds by the specified number of lines
 void Adafruit_Thermal::feed(uint8_t x){
-  // The datasheet claims sending bytes 27, 100, <x> will work
-  // but it feeds much much more.
-  while (x--)
-    write('\n');
+  // The datasheet claims sending bytes 27, 100, <x> will work, but
+  // it feeds much more than that.  So it's done manually:
+  while(x--) write('\n');
 }
 
-// Feeds by the specified number of rows of pixels
+// Feeds by the specified number of individual  pixel rows
 void Adafruit_Thermal::feedRows(uint8_t rows) {
   writeBytes(27, 74, rows);
+  timeoutSet(rows * dotFeedTime);
 }
 
 void Adafruit_Thermal::flush() {
@@ -274,16 +349,28 @@ void Adafruit_Thermal::flush() {
 }
 
 void Adafruit_Thermal::setSize(char value){
-  int size = 0;
+  uint8_t size = 0;
 
-  if(value == 's' || value == 'S') size = 0;
-  if(value == 'm' || value == 'M') size = 10;
-  if(value == 'l' || value == 'L') size = 25;
+  switch(toupper(value)) {
+   case 'S': // Small: standard width and height
+    size       =  0;
+    charHeight = 24;
+    maxColumn  = 32;
+    break;
+   case 'M': // Medium: double height
+    size       = 10;
+    charHeight = 48;
+    maxColumn  = 32;
+    break;
+   case 'L': // Large: double width and height
+    size       = 25;
+    charHeight = 48;
+    maxColumn  = 16;
+    break;
+  }
 
   writeBytes(29, 33, size, 10);
-  // if (linefeedneeded)
-  //  println("lfn"); //feed();
-  //linefeedneeded = false;
+  prevByte = '\n'; // Setting the size adds a linefeed
 }
 
 // Underlines of different weights can be produced:
@@ -299,67 +386,84 @@ void Adafruit_Thermal::underlineOff() {
 }
 
 void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
-  if (w > 384) return; // maximum width of the printer
-  for (int rowStart=0; rowStart < h; rowStart += 256) {
-    int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
-    delay(500); // Need these delays else bitmap doesn't always print. ???
-    writeBytes(18, 42);
-    writeBytes(chunkHeight, w/8);
-    delay(500);
-    for (int i=0; i<((w/8)*chunkHeight); i++) {
-      PRINTER_PRINT(pgm_read_byte(bitmap + (rowStart*(w/8)) + i));
+  int rowBytes, rowBytesClipped, rowStart, chunkHeight, x, y, i;
+
+  rowBytes        = (w + 7) / 8; // Round up to next byte boundary
+  rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
+
+  for(rowStart=0; rowStart < h; rowStart += 255) {
+    // Issue up to 255 rows at a time:
+    chunkHeight = h - rowStart;
+    if(chunkHeight > 255) chunkHeight = 255;
+
+    writeBytes(18, 42, chunkHeight, rowBytesClipped);
+
+    for(i=y=0; y < chunkHeight; y++) {
+      for(x=0; x < rowBytesClipped; x++, i++) {
+        PRINTER_PRINT(pgm_read_byte(bitmap + i));
+      }
+      i += rowBytes - rowBytesClipped;
     }
-    delay(500);
+    timeoutSet(chunkHeight * dotPrintTime);
   }
+  prevByte = '\n';
 }
 
 void Adafruit_Thermal::printBitmap(int w, int h, Stream *stream) {
-  if (w > 384) return; // maximum width of the printer
-  for (int rowStart=0; rowStart < h; rowStart += 256) {
-    int chunkHeight = ((h - rowStart) > 255) ? 255 : (h - rowStart);
-    delay(500); // Need these delays else bitmap doesn't always print. ???
-    writeBytes(18, 42);
-    writeBytes(chunkHeight, w/8);
-    delay(500);
-    for (int i=0; i<((w/8)*chunkHeight); i++) {
-      PRINTER_PRINT((uint8_t)stream->read());
+  int rowBytes, rowBytesClipped, rowStart, chunkHeight, x, y, i;
+
+  rowBytes        = (w + 7) / 8; // Round up to next byte boundary
+  rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
+
+  for(rowStart=0; rowStart < h; rowStart += 255) {
+    // Issue up to 255 rows at a time:
+    chunkHeight = h - rowStart;
+    if(chunkHeight > 255) chunkHeight = 255;
+
+    writeBytes(18, 42, chunkHeight, rowBytesClipped);
+
+    for(y=0; y < chunkHeight; y++) {
+      for(x=0; x < rowBytesClipped; x++) {
+        PRINTER_PRINT((uint8_t)stream->read());
+      }
+      for(i = rowBytes - rowBytesClipped; i>0; i--) (void)stream->read();
     }
-    delay(500);
+    timeoutSet(chunkHeight * dotPrintTime);
   }
-};
+  prevByte = '\n';
+}
 
 void Adafruit_Thermal::printBitmap(Stream *stream) {
-  uint8_t tmp;
+  uint8_t  tmp;
   uint16_t width, height;
 
-  tmp = stream->read();
-  width = (stream->read() << 8) + tmp;
+  tmp    =  stream->read();
+  width  = (stream->read() << 8) + tmp;
 
-  tmp = stream->read();
+  tmp    =  stream->read();
   height = (stream->read() << 8) + tmp;
 
   printBitmap(width, height, stream);
-};
+}
 
 // Take the printer offline. Print commands sent after this will be
-// ignored until `online` is called
+// ignored until 'online' is called.
 void Adafruit_Thermal::offline(){
   writeBytes(27, 61, 0);
 }
 
-// Take the printer back online. Subsequent print commands will be
-// obeyed.
+// Take the printer back online. Subsequent print commands will be obeyed.
 void Adafruit_Thermal::online(){
   writeBytes(27, 61, 1);
 }
 
-// Put the printer into a low-energy state immediately
+// Put the printer into a low-energy state immediately.
 void Adafruit_Thermal::sleep() {
   sleepAfter(0);
 }
 
 // Put the printer into a low-energy state after the given number
-// of seconds
+// of seconds.
 void Adafruit_Thermal::sleepAfter(uint8_t seconds) {
   writeBytes(27, 56, seconds);
 }
@@ -369,18 +473,26 @@ void Adafruit_Thermal::sleepAfter(uint8_t seconds) {
 // commands to be send.
 void Adafruit_Thermal::wake() {
   writeBytes(255);
-  delay(50);
+  timeoutSet(50000);
+}
+
+void Adafruit_Thermal::setLineHeight(int val) {
+  if(val < 24) val = 24;
+  lineSpacing = val - 24;
+
+  // The printer doesn't take into account the current text height
+  // when setting line height, making this more akin to inter-line
+  // spacing.  Default line spacing is 32 (char height of 24, line
+  // spacing of 8).
+  writeBytes(27, 51, val);
 }
 
 ////////////////////// not working?
-void Adafruit_Thermal::tab(){
+void Adafruit_Thermal::tab() {
   PRINTER_PRINT(9);
 }
 void Adafruit_Thermal::setCharSpacing(int spacing) {
   writeBytes(27, 32, 0, 10);
-}
-void Adafruit_Thermal::setLineHeight(int val){
-  writeBytes(27, 51, val); // default is 32
 }
 /////////////////////////
 
