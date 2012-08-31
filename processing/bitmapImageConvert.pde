@@ -35,8 +35,6 @@ void setup() {
   output.println("#ifndef _" + basename + "_h_");
   output.println("#define _" + basename + "_h_");
   output.println();
-  output.println("#include <avr/pgmspace.h>");
-  output.println();
   output.println("#define " + basename + "_width  " + img.width);
   output.println("#define " + basename + "_height " + img.height);
   output.println();
@@ -51,7 +49,7 @@ void setup() {
       for(b=128; b>=lastBit; b >>= 1) { // Each pixel within block...
         if((img.pixels[i++] & 1) == 0) sum |= b; // If black pixel, set bit
       }
-      output.format("0x%02x", sum); // Write accumulated bits
+      output.format("0x%02X", sum); // Write accumulated bits
       if(++n < totalBytes) output.print(',');
     }
   }

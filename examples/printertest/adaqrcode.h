@@ -1,8 +1,6 @@
 #ifndef _adaqrcode_h_
 #define _adaqrcode_h_
 
-#include <avr/pgmspace.h>
-
 #define adaqrcode_width  135
 #define adaqrcode_height 135
 

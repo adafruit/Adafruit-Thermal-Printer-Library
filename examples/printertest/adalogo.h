@@ -1,8 +1,6 @@
 #ifndef _adalogo_h_
 #define _adalogo_h_
 
-#include <avr/pgmspace.h>
-
 #define adalogo_width  75
 #define adalogo_height 75
 

@@ -19,6 +19,7 @@
 #include "Adafruit_Thermal.h"
 #include "adalogo.h"
 #include "adaqrcode.h"
+#include <avr/pgmspace.h>
 
 int printer_RX_Pin = 5;  // This is the green wire
 int printer_TX_Pin = 6;  // This is the yellow wire
