@@ -28,6 +28,7 @@ Adafruit_Thermal printer(printer_RX_Pin, printer_TX_Pin);
 
 void setup(){
   Serial.begin(9600);
+  pinMode(7, OUTPUT); digitalWrite(7, LOW); // To also work w/IoTP printer
   printer.begin();
 
   // The following function calls are in setup(), but do not need to be.
