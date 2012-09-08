@@ -410,7 +410,7 @@ void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
 }
 
 void Adafruit_Thermal::printBitmap(int w, int h, Stream *stream) {
-  int rowBytes, rowBytesClipped, rowStart, chunkHeight, x, y, i;
+  int rowBytes, rowBytesClipped, rowStart, chunkHeight, x, y, i, c;
 
   rowBytes        = (w + 7) / 8; // Round up to next byte boundary
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
@@ -424,9 +424,12 @@ void Adafruit_Thermal::printBitmap(int w, int h, Stream *stream) {
 
     for(y=0; y < chunkHeight; y++) {
       for(x=0; x < rowBytesClipped; x++) {
-        PRINTER_PRINT((uint8_t)stream->read());
+        while((c = stream->read()) < 0);
+        PRINTER_PRINT((uint8_t)c);
       }
-      for(i = rowBytes - rowBytesClipped; i>0; i--) (void)stream->read();
+      for(i = rowBytes - rowBytesClipped; i>0; i--) {
+        while((c = stream->read()) < 0);
+      }
     }
     timeoutSet(chunkHeight * dotPrintTime);
   }
