@@ -385,7 +385,7 @@ void Adafruit_Thermal::underlineOff() {
   underlineOn(0);
 }
 
-void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
+void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem) {
   int rowBytes, rowBytesClipped, rowStart, chunkHeight, x, y, i;
 
   rowBytes        = (w + 7) / 8; // Round up to next byte boundary
@@ -400,7 +400,7 @@ void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap) {
 
     for(y=0; y < chunkHeight; y++) {
       for(x=0; x < rowBytesClipped; x++, i++) {
-        PRINTER_PRINT(pgm_read_byte(bitmap + i));
+          PRINTER_PRINT(fromProgMem ? pgm_read_byte(bitmap + i) : *(bitmap+i));
       }
       i += rowBytes - rowBytesClipped;
     }
