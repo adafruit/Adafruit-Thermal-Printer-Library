@@ -65,11 +65,11 @@ void setup(){
   printer.underlineOff();
 
   printer.setSize('L');     // Set type size, accepts 'S', 'M', 'L'
-  printer.print("Large");   // Print line
-  printer.setSize('M');     // Setting the size adds a linefeed
-  printer.print("Medium");  // Print line
-  printer.setSize('S');     // Setting the size adds a linefeed
-  printer.println("Small"); // Print line
+  printer.println("Large"); // Print line
+  printer.setSize('M');
+  printer.println("Medium");
+  printer.setSize('S');
+  printer.println("Small");
 
   printer.justify('C');
   printer.println("normal\nline\nspacing");
