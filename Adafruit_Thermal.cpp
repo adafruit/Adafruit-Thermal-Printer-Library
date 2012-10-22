@@ -181,7 +181,7 @@ void Adafruit_Thermal::begin(int heatTime) {
   writeBytes(18, 35); // DC2 # (print density)
   writeBytes((printBreakTime << 5) | printDensity);
 
-  dotPrintTime = 22000; // See comments near top of file for
+  dotPrintTime = 26000; // See comments near top of file for
   dotFeedTime  =  2100; // an explanation of these values.
 }
 
@@ -349,21 +349,21 @@ void Adafruit_Thermal::flush() {
 }
 
 void Adafruit_Thermal::setSize(char value){
-  uint8_t size = 0;
+  uint8_t size;
 
   switch(toupper(value)) {
-   case 'S': // Small: standard width and height
-    size       =  0;
+   default:  // Small: standard width and height
+    size       = 0x00;
     charHeight = 24;
     maxColumn  = 32;
     break;
    case 'M': // Medium: double height
-    size       = 10;
+    size       = 0x01;
     charHeight = 48;
     maxColumn  = 32;
     break;
    case 'L': // Large: double width and height
-    size       = 25;
+    size       = 0x11;
     charHeight = 48;
     maxColumn  = 16;
     break;
