@@ -145,6 +145,7 @@ void Adafruit_Thermal::begin(int heatTime) {
   // sec of uptime before printer can receive data.
   timeoutSet(500000);
 
+  wake();
   reset();
 
   // Description of print settings from page 23 of the manual:
@@ -462,7 +463,7 @@ void Adafruit_Thermal::online(){
 
 // Put the printer into a low-energy state immediately.
 void Adafruit_Thermal::sleep() {
-  sleepAfter(0);
+  sleepAfter(1);
 }
 
 // Put the printer into a low-energy state after the given number
