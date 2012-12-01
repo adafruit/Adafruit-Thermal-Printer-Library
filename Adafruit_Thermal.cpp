@@ -182,7 +182,7 @@ void Adafruit_Thermal::begin(int heatTime) {
   writeBytes(18, 35); // DC2 # (print density)
   writeBytes((printBreakTime << 5) | printDensity);
 
-  dotPrintTime = 26000; // See comments near top of file for
+  dotPrintTime = 30000; // See comments near top of file for
   dotFeedTime  =  2100; // an explanation of these values.
 }
 

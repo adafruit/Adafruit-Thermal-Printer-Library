@@ -51,7 +51,7 @@ class Adafruit_Thermal : public Print {
   Adafruit_Thermal(int RX_Pin, int TX_Pin);
 
   void
-    begin(int heatTime=255),
+    begin(int heatTime=200),
     reset(),
     setDefault(),
     test(),
