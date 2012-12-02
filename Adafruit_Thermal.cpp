@@ -480,6 +480,35 @@ void Adafruit_Thermal::wake() {
   timeoutSet(50000);
 }
 
+// Check the status of the paper using the printers self reporting
+// ability. Doesn't match the datasheet...
+// Returns true for paper, false for no paper.
+bool Adafruit_Thermal::hasPaper() {
+  writeBytes(27, 118, 0);
+  
+  char stat;
+  // Some delay while checking.
+  // Could probably be done better...
+  for (int i = 0; i < 1000; i++) {
+    if (_printer->available()) {
+      stat = _printer->read();
+      break;
+    }
+  }
+  
+  // Mask the 3 LSB, this seems to be the one we care about.
+  stat = stat & 0b000100;
+  
+  // If it's set, no paper, if it's clear, we have paper.
+  if (stat == 0b000100) {
+    return false;
+  } else if (stat == 0b000000){
+    return true;
+    
+  }
+  
+}
+
 void Adafruit_Thermal::setLineHeight(int val) {
   if(val < 24) val = 24;
   lineSpacing = val - 24;
