@@ -89,7 +89,7 @@ class Adafruit_Thermal : public Print {
     printBarcode(char * text, uint8_t type),
     setBarcodeHeight(int val=50),
 
-    printBitmap(int w, int h, const uint8_t *bitmap),
+    printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem = true),
     printBitmap(int w, int h, Stream *stream),
     printBitmap(Stream *stream),
 
