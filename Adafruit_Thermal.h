@@ -100,6 +100,8 @@ class Adafruit_Thermal : public Print {
     setCharSpacing(int spacing), // Not working
     tab();                       // Not working
 
+  bool hasPaper();
+
 #if ARDUINO >= 100
   size_t write(uint8_t c);
 #else
