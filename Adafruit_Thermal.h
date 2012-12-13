@@ -82,6 +82,7 @@ class Adafruit_Thermal : public Print {
     sleep(),
     sleepAfter(uint8_t seconds),
     wake(),
+    listen(),
 
     setSize(char value),
     setLineHeight(int val=32),
