@@ -481,6 +481,12 @@ void Adafruit_Thermal::wake() {
   timeoutSet(50000);
 }
 
+// Tell the soft serial to listen. Needed if you are using multiple
+// SoftSerial interfaces.
+void Adafruit_Thermal::listen() {
+  _printer->listen();
+}
+
 // Check the status of the paper using the printers self reporting
 // ability. Doesn't match the datasheet...
 // Returns true for paper, false for no paper.
