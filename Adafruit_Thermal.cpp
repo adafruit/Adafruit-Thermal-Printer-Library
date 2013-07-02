@@ -143,7 +143,7 @@ void Adafruit_Thermal::begin(int heatTime) {
   // The printer can't start receiving data immediately upon power up --
   // it needs a moment to cold boot and initialize.  Allow at least 1/2
   // sec of uptime before printer can receive data.
-  timeoutSet(500000);
+  timeoutSet(500000L);
 
   wake();
   reset();
@@ -473,12 +473,17 @@ void Adafruit_Thermal::sleepAfter(uint8_t seconds) {
   writeBytes(27, 56, seconds);
 }
 
-// Wake the printer from a low-energy state. This command will wait
-// for 50ms (as directed by the datasheet) before allowing further
-// commands to be send.
+// Wake the printer from a low-energy state.
 void Adafruit_Thermal::wake() {
   writeBytes(255);
-  timeoutSet(50000);
+  // Datasheet recomments a 50 mS delay before issuing further commands,
+  // but in practice this alone isn't sufficient (e.g. text size/style
+  // commands may still be misinterpreted on wake).  A slightly longer
+  // delay, interspersed with ESC chars (no-ops) seems to help.
+  for(uint8_t i=0; i<10; i++) {
+    writeBytes(27);
+    timeoutSet(10000L);
+  }
 }
 
 // Tell the soft serial to listen. Needed if you are using multiple
