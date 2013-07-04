@@ -48,7 +48,7 @@ void Adafruit_Thermal::timeoutSet(unsigned long x) {
 
 // This function waits (if necessary) for the prior task to complete.
 void Adafruit_Thermal::timeoutWait() {
-  while((long)(micros() - resumeTime) < 0); // Rollover-proof
+  while((long)(micros() - resumeTime) < 0L); // Rollover-proof
 }
 
 // Printer performance may vary based on the power supply voltage,
@@ -475,6 +475,10 @@ void Adafruit_Thermal::sleepAfter(uint8_t seconds) {
 
 // Wake the printer from a low-energy state.
 void Adafruit_Thermal::wake() {
+  // Printer may have been idle for a very long time, during which the
+  // micros() counter has rolled over.  To avoid shenanigans, reset the
+  // timeout counter before issuing the wake command.
+  timeoutSet(0);
   writeBytes(255);
   // Datasheet recomments a 50 mS delay before issuing further commands,
   // but in practice this alone isn't sufficient (e.g. text size/style
