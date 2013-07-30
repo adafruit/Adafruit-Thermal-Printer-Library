@@ -255,12 +255,14 @@ void Adafruit_Thermal::printBarcode(char * text, uint8_t type) {
 void Adafruit_Thermal::setPrintMode(uint8_t mask) {
   printMode |= mask;
   writePrintMode();
-  charHeight = (printMode & DOUBLE_HEIGHT_MASK) ? 24 : 48;
+  charHeight = (printMode & DOUBLE_HEIGHT_MASK) ? 48 : 24;
   maxColumn  = (printMode & DOUBLE_WIDTH_MASK ) ? 16 : 32;
 }
 void Adafruit_Thermal::unsetPrintMode(uint8_t mask) {
   printMode &= ~mask;
   writePrintMode();
+  charHeight = (printMode & DOUBLE_HEIGHT_MASK) ? 48 : 24;
+  maxColumn  = (printMode & DOUBLE_WIDTH_MASK ) ? 16 : 32;
 }
 
 void Adafruit_Thermal::writePrintMode() {
