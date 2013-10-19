@@ -184,6 +184,7 @@ void Adafruit_Thermal::begin(int heatTime) {
 
   dotPrintTime = 30000; // See comments near top of file for
   dotFeedTime  =  2100; // an explanation of these values.
+  maxChunkHeight = 255;
 }
 
 // Reset printer to default state.
@@ -395,10 +396,10 @@ void Adafruit_Thermal::printBitmap(
   rowBytes        = (w + 7) / 8; // Round up to next byte boundary
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
 
-  for(i=rowStart=0; rowStart < h; rowStart += 255) {
+  for(i=rowStart=0; rowStart < h; rowStart += maxChunkHeight) {
     // Issue up to 255 rows at a time:
     chunkHeight = h - rowStart;
-    if(chunkHeight > 255) chunkHeight = 255;
+    if(chunkHeight > maxChunkHeight) chunkHeight = maxChunkHeight;
 
     writeBytes(18, 42, chunkHeight, rowBytesClipped);
 
@@ -419,10 +420,10 @@ void Adafruit_Thermal::printBitmap(int w, int h, Stream *stream) {
   rowBytes        = (w + 7) / 8; // Round up to next byte boundary
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
 
-  for(rowStart=0; rowStart < h; rowStart += 255) {
+  for(rowStart=0; rowStart < h; rowStart += maxChunkHeight) {
     // Issue up to 255 rows at a time:
     chunkHeight = h - rowStart;
-    if(chunkHeight > 255) chunkHeight = 255;
+    if(chunkHeight > maxChunkHeight) chunkHeight = maxChunkHeight;
 
     writeBytes(18, 42, chunkHeight, rowBytesClipped);
 
@@ -536,6 +537,10 @@ void Adafruit_Thermal::setLineHeight(int val) {
   // spacing.  Default line spacing is 32 (char height of 24, line
   // spacing of 8).
   writeBytes(27, 51, val);
+}
+
+void Adafruit_Thermal::setMaxChunkHeight(int val) {
+  maxChunkHeight = val;
 }
 
 ////////////////////// not working?
