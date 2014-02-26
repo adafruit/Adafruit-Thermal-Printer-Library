@@ -2,12 +2,15 @@
 
 =begin
 This script uses imagemagick and RMagick to produce a dithered version of an
-image, and then produces a cpp file containing an array of bytes suitable
-for printing.
+image, and then produces a binary file containing an bytes suitable for
+printing.
 
-The cpp files also contain a comment which is useful to visualise the printed
-output; I suggest you open it in a text editor and shrink the fontsize until 
-each row of characters fits on the screen without wrapping.
+The file will begin with the dimensons of the image data, such that it can be
+passed directly to the `printBitmap(Stream *stream)` function.
+
+If the '--skip-header' option is given, then the dimensions will not be
+included in the file, and the `printBitmap(int w, int h, Stream *stream)`
+function should be used instead.
 =end
 
 require "rubygems"
