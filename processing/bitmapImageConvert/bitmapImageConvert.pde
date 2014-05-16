@@ -1,17 +1,21 @@
 // Convert image to a C header file suitable for the Adafruit_Thermal library.
 // This is NOT an Arduino sketch.  Runs in Processing IDE (www.processing.org)
 
-void setup() {
-  String      filename, basename;
+void fileSelected(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+    exit();
+  }
+  
+  String      filename = selection.getAbsolutePath();
+  String      basename;
   PImage      img;
   PrintWriter output;
   int         i, x, y, b, rowBytes, totalBytes, lastBit, sum, n;
 
-  // Select and load image
-  filename   = selectInput("Select image file to convert:");
-  println("Loading image...");
+  println("Loading image " + filename + "..");
   img        = loadImage(filename);
-
+  
   // Morph filename into output filename and base name for data
   x = filename.lastIndexOf('.');
   if(x > 0) filename = filename.substring(0, x);  // Strip current extension
@@ -65,3 +69,6 @@ void setup() {
   exit();
 }
 
+void setup() {
+  selectInput("Select a file to convert:", "fileSelected");
+}
