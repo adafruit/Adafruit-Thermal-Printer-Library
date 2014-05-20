@@ -2,15 +2,18 @@
 // This is NOT an Arduino sketch.  Runs in Processing IDE (www.processing.org)
 
 void setup() {
+  // Select and load image
+  selectInput("Select image file to convert:", "processImage");
+}
+
+void processImage(File image) {
   String      filename, basename;
   PImage      img;
   PrintWriter output;
   int         i, x, y, b, rowBytes, totalBytes, lastBit, sum, n;
-
-  // Select and load image
-  filename   = selectInput("Select image file to convert:");
   println("Loading image...");
-  img        = loadImage(filename);
+  filename = image.getPath();
+  img        = loadImage(image.getPath());
 
   // Morph filename into output filename and base name for data
   x = filename.lastIndexOf('.');
@@ -64,4 +67,3 @@ void setup() {
   println("Done!");
   exit();
 }
-
