@@ -97,6 +97,7 @@ class Adafruit_Thermal : public Print {
     timeoutSet(unsigned long),
     timeoutWait(),
     setTimes(unsigned long, unsigned long),
+    setMaxChunkHeight(int val),
 
     setCharSpacing(int spacing), // Not working
     tab();                       // Not working
@@ -127,7 +128,8 @@ class Adafruit_Thermal : public Print {
   int
     printMode,
     _RX_Pin,
-    _TX_Pin;
+    _TX_Pin,
+    maxChunkHeight;
   void
     setPrintMode(uint8_t mask),
     unsetPrintMode(uint8_t mask),
