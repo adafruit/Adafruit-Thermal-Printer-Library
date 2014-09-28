@@ -86,6 +86,7 @@ class Adafruit_Thermal : public Print {
 
     setSize(char value),
     setLineHeight(int val=32),
+    setFont(char value),          // A (default, 12x24) or B (small, 9x17)
 
     printBarcode(char * text, uint8_t type),
     setBarcodeHeight(int val=50),
@@ -101,6 +102,11 @@ class Adafruit_Thermal : public Print {
 
     setCharSpacing(int spacing), // Not working
     tab();                       // Not working
+
+  uint8_t 
+    getMaxColumn(), 
+    getCharHeight(),
+    getCharWidth();
 
   bool hasPaper();
 
@@ -119,6 +125,7 @@ class Adafruit_Thermal : public Print {
     column,        // Last horizontal column printed
     maxColumn,     // Page width (output 'wraps' at this point)
     charHeight,    // Height of characters, in 'dots'
+    charWidth,     // Width of characters, in 'dots'
     lineSpacing,   // Inter-line spacing (not line height), in dots
     barcodeHeight; // Barcode height in dots, not including text
   unsigned long
@@ -133,6 +140,7 @@ class Adafruit_Thermal : public Print {
   void
     setPrintMode(uint8_t mask),
     unsetPrintMode(uint8_t mask),
+    adjustCharValues(uint8_t mask),
     writePrintMode(),
     writeBytes(uint8_t a),
     writeBytes(uint8_t a, uint8_t b),
