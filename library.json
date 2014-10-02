@@ -1,0 +1,10 @@
+{
+  "name": "Adafruit-Arduino-ThermalPrinter",
+  "keywords": "printer",
+  "description": "Arduino Library for Small Thermal Printers",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/adafruit/Adafruit-Thermal-Printer-Library.git"
+  }
+}
