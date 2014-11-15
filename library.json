@@ -1,7 +1,7 @@
 {
   "name": "Adafruit-ThermalPrinter",
   "keywords": "printer",
-  "description": "Library for Small Thermal Printers",
+  "description": "Library for the Small Thermal Printers",
   "repository":
   {
     "type": "git",
