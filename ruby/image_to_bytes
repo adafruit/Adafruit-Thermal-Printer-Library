@@ -43,7 +43,7 @@ File.open(output_name + ".cpp", "w") do |f|
   width = img.columns
   height = img.rows
   f.puts "/*\nprinter.printBitmap(#{width}, #{height}, image);\n*/"
-  f.puts "static unsigned char __attribute__ ((progmem)) image [] = {"
+  f.puts "static const uint8_t PROGMEM image[] = {"
   bytes.each_slice(width / 8) { |slice| f.puts slice.map { |s| "0x"+s.rjust(2, "0") }.join(",") + ",//" }
   f.puts "};"
   f.puts

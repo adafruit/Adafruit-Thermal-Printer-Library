@@ -23,7 +23,7 @@ end
 
 def output(bytes, dimensions, io=STDOUT)
   io.puts "// image dimensions: #{dimensions.join("x")}"
-  io.puts "static unsigned char __attribute__ ((progmem)) image [] = {"
+  io.puts "static const uint8_t PROGMEM image[] = {"
   bytes.each_slice(dimensions[1]/8) do |slice|
     slice_as_hex = slice.map { |byte|
       hex = byte.to_s(16).upcase.rjust(2, "0")
