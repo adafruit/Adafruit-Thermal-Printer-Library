@@ -52,16 +52,24 @@
 // be unnecessary, but erring on side of caution here.
 #define BYTE_TIME (((11L * 1000000L) + (BAUDRATE / 2)) / BAUDRATE)
 
-Adafruit_Thermal::Adafruit_Thermal(Stream *s) : stream(s) {} // Constructor
+// Constructor
+Adafruit_Thermal::Adafruit_Thermal(Stream *s, uint8_t dtr) :
+  stream(s), dtrPin(dtr) {
+  dtrEnabled = false;
+}
 
 // This method sets the estimated completion time for a just-issued task.
 void Adafruit_Thermal::timeoutSet(unsigned long x) {
-  resumeTime = micros() + x;
+  if(!dtrEnabled) resumeTime = micros() + x;
 }
 
 // This function waits (if necessary) for the prior task to complete.
 void Adafruit_Thermal::timeoutWait() {
-  while((long)(micros() - resumeTime) < 0L); // (syntax is rollover-proof)
+  if(dtrEnabled) {
+    while(digitalRead(dtrPin) == HIGH);
+  } else {
+    while((long)(micros() - resumeTime) < 0L); // (syntax is rollover-proof)
+  }
 }
 
 // Printer performance may vary based on the power supply voltage,
@@ -137,7 +145,7 @@ size_t Adafruit_Thermal::write(uint8_t c) {
   return 1;
 }
 
-void Adafruit_Thermal::begin(int heatTime) {
+void Adafruit_Thermal::begin(uint8_t heatTime) {
 
   // The printer can't start receiving data immediately upon power up --
   // it needs a moment to cold boot and initialize.  Allow at least 1/2
@@ -180,6 +188,12 @@ void Adafruit_Thermal::begin(int heatTime) {
 #define printBreakTime  2 // 500 uS
 
   writeBytes(ASCII_DC2, '#', (printBreakTime << 5) | printDensity);
+
+  // Enable DTR pin if requested
+  if(dtrPin < 255) {
+    writeBytes(ASCII_GS, 'a', (1 << 5));
+    dtrEnabled = true;
+  }
 
   dotPrintTime   = 30000; // See comments near top of file for
   dotFeedTime    =  2100; // an explanation of these values.

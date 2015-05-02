@@ -122,12 +122,12 @@ class Adafruit_Thermal : public Print {
 
   // IMPORTANT: constructor syntax has changed from prior versions
   // of this library.  Please see notes in the example code!
-  Adafruit_Thermal(Stream *s=&Serial);
+  Adafruit_Thermal(Stream *s=&Serial, uint8_t dtr=255);
 
   size_t
     write(uint8_t c);
   void
-    begin(int heatTime=120),
+    begin(uint8_t heatTime=120),
     boldOff(),
     boldOn(),
     doubleHeightOff(),
@@ -185,7 +185,10 @@ class Adafruit_Thermal : public Print {
     maxColumn,     // Page width (output 'wraps' at this point)
     charHeight,    // Height of characters, in 'dots'
     lineSpacing,   // Inter-line spacing (not line height), in dots
-    barcodeHeight; // Barcode height in dots, not including text
+    barcodeHeight, // Barcode height in dots, not including text
+    dtrPin;        // DTR handshaking pin (experimental)
+  boolean
+    dtrEnabled;    // True if DTR pin set & printer initialized
   int
     maxChunkHeight;
   unsigned long
