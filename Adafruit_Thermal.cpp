@@ -191,6 +191,7 @@ void Adafruit_Thermal::begin(uint8_t heatTime) {
 
   // Enable DTR pin if requested
   if(dtrPin < 255) {
+    pinMode(dtrPin, INPUT_PULLUP);
     writeBytes(ASCII_GS, 'a', (1 << 5));
     dtrEnabled = true;
   }
