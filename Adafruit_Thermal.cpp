@@ -198,7 +198,7 @@ void Adafruit_Thermal::begin(uint8_t heatTime) {
 
   dotPrintTime   = 30000; // See comments near top of file for
   dotFeedTime    =  2100; // an explanation of these values.
-  maxChunkHeight =   256;
+  maxChunkHeight =   255;
 }
 
 // Reset printer to default state.
@@ -443,9 +443,13 @@ void Adafruit_Thermal::printBitmap(
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
 
   // Est. max rows to write at once, assuming 256 byte printer buffer.
-  chunkHeightLimit = 256 / rowBytesClipped;
-  if(chunkHeightLimit > maxChunkHeight) chunkHeightLimit = maxChunkHeight;
-  else if(chunkHeightLimit < 1)         chunkHeightLimit = 1;
+  if(dtrEnabled) {
+    chunkHeightLimit = 255; // Buffer doesn't matter, handshake!
+  } else {
+    chunkHeightLimit = 256 / rowBytesClipped;
+    if(chunkHeightLimit > maxChunkHeight) chunkHeightLimit = maxChunkHeight;
+    else if(chunkHeightLimit < 1)         chunkHeightLimit = 1;
+  }
 
   for(i=rowStart=0; rowStart < h; rowStart += chunkHeightLimit) {
     // Issue up to chunkHeightLimit rows at a time:
@@ -474,9 +478,13 @@ void Adafruit_Thermal::printBitmap(int w, int h, Stream *fromStream) {
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
 
   // Est. max rows to write at once, assuming 256 byte printer buffer.
-  chunkHeightLimit = 256 / rowBytesClipped;
-  if(chunkHeightLimit > maxChunkHeight) chunkHeightLimit = maxChunkHeight;
-  else if(chunkHeightLimit < 1)         chunkHeightLimit = 1;
+  if(dtrEnabled) {
+    chunkHeightLimit = 255; // Buffer doesn't matter, handshake!
+  } else {
+    chunkHeightLimit = 256 / rowBytesClipped;
+    if(chunkHeightLimit > maxChunkHeight) chunkHeightLimit = maxChunkHeight;
+    else if(chunkHeightLimit < 1)         chunkHeightLimit = 1;
+  }
 
   for(rowStart=0; rowStart < h; rowStart += chunkHeightLimit) {
     // Issue up to chunkHeightLimit rows at a time:
