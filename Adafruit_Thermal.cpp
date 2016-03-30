@@ -321,11 +321,29 @@ void Adafruit_Thermal::inverseOff(){
 }
 
 void Adafruit_Thermal::upsideDownOn(){
-  setPrintMode(UPDOWN_MASK);
+  #if PRINTER_FIRMWARE >= 268
+    writeBytes(ASCII_ESC, '{', 1);
+  #else
+    setPrintMode(UPDOWN_MASK);
+  #endif
 }
 
 void Adafruit_Thermal::upsideDownOff(){
-  unsetPrintMode(UPDOWN_MASK);
+  #if PRINTER_FIRMWARE >= 268
+    writeBytes(ASCII_ESC, '{', 0);
+  #else
+    unsetPrintMode(UPDOWN_MASK);
+  #endif
+}
+
+// only tested on firmware 2.68
+void Adafruit_Thermal::sidewaysOn(){
+  writeBytes(ASCII_ESC, 'V', 1);
+}
+
+// only tested on firmware 2.68
+void Adafruit_Thermal::sidewaysOff(){
+  writeBytes(ASCII_ESC, 'V', 0);
 }
 
 void Adafruit_Thermal::doubleHeightOn(){
