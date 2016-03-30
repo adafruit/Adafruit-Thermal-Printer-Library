@@ -157,6 +157,8 @@ class Adafruit_Thermal : public Print {
     setMaxChunkHeight(int val=256),
     setSize(char value),
     setTimes(unsigned long, unsigned long),
+    sidewaysOn(),
+    sidewaysOff(),
     sleep(),
     sleepAfter(uint16_t seconds),
     strikeOff(),
