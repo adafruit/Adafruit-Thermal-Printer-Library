@@ -321,7 +321,7 @@ void Adafruit_Thermal::inverseOff(){
 }
 
 void Adafruit_Thermal::upsideDownOn(){
-  #if PRINTER_FIRMWARE = 268
+  #if PRINTER_FIRMWARE >= 268
     writeBytes(ASCII_ESC, '{', 1);
   #else
     setPrintMode(UPDOWN_MASK);
@@ -329,7 +329,7 @@ void Adafruit_Thermal::upsideDownOn(){
 }
 
 void Adafruit_Thermal::upsideDownOff(){
-  #if PRINTER_FIRMWARE = 268
+  #if PRINTER_FIRMWARE >= 268
     writeBytes(ASCII_ESC, '{', 0);
   #else
     unsetPrintMode(UPDOWN_MASK);
