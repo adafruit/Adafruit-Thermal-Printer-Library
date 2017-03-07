@@ -570,7 +570,11 @@ void Adafruit_Thermal::wake() {
 // ability.  Returns true for paper, false for no paper.
 // Might not work on all printers!
 bool Adafruit_Thermal::hasPaper() {
+#if PRINTER_FIRMWARE >= 264
+  writeBytes(ASCII_ESC, 'v', 0);
+#else
   writeBytes(ASCII_GS, 'r', 0);
+#endif
 
   int status = -1;
   for(uint8_t i=0; i<10; i++) {
