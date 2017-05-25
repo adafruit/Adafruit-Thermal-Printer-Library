@@ -66,9 +66,9 @@ void Adafruit_Thermal::timeoutSet(unsigned long x) {
 // This function waits (if necessary) for the prior task to complete.
 void Adafruit_Thermal::timeoutWait() {
   if(dtrEnabled) {
-    while(digitalRead(dtrPin) == HIGH);
+    while(digitalRead(dtrPin) == HIGH){yield();};
   } else {
-    while((long)(micros() - resumeTime) < 0L); // (syntax is rollover-proof)
+    while((long)(micros() - resumeTime) < 0L){yield();}; // (syntax is rollover-proof)
   }
 }
 
