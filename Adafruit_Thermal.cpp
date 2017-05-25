@@ -646,3 +646,59 @@ void Adafruit_Thermal::setCharSpacing(int spacing) {
 }
 
 // -------------------------------------------------------------------------
+
+// Standard ESC/POS commands that work only on printers that support these commands
+
+void Adafruit_Thermal::printQRcode(char *text, uint8_t errCorrect, uint8_t moduleSize, uint8_t model, uint16_t timeoutQR) {	//Store data and print QR Code
+	
+	//Set QR-Code model
+	//Range
+	// 49 selects Model 1
+	// 50 selects Model 2
+	// 51 selects Micro QR-Code
+	if (model<49 || model>51) model=50 ; // if out of allowed range set model 2 as fallback. Some printers ignore this setting and use e.g. Model 2 in any case!
+	writeBytes(ASCII_GS, '(', 'k', 4); 
+	writeBytes(0, 49, 65, model);  
+	writeBytes(0);
+	
+	//Module size in pixels (fn=167)
+	//Range: 
+	//1 <= n <= 16
+	if (moduleSize<1 || moduleSize>16) moduleSize=3; // Default = 3 	
+	writeBytes(ASCII_GS, '(', 'k');  
+	writeBytes(3, 0, 49, 67);  
+	writeBytes(moduleSize); 
+	
+    //Set error correction level fn=169    
+	  // 48 selects error correction level L 7%
+    // 49 selects error correction level M 15%
+    // 50 selects error correction level Q 25%
+    // 51 selects error correction level H 30%
+	if (errCorrect<48 || errCorrect>51) errCorrect=48; // if incorrect level is specified take level l
+	writeBytes(ASCII_GS, '(', 'k');  
+	writeBytes(3, 0, 49, 69);  	
+	writeBytes(errCorrect); //Default = 48 
+	
+	//Store the QR Code data in the symbol storage area.  (fn=180) 
+	writeBytes(ASCII_GS, '(', 'k');    
+	uint16_t len = strlen(text);
+		
+	writeBytes((uint8_t)((len+3)%256), (uint8_t)((len+3)/256)); //pL , pH -> pL and pH specify the parameter count (pL + pH x 256) in bytes after cn
+	writeBytes(49, 80, 48);   
+    for(uint16_t i=0; i<len; i++) writeBytes(text[i]); // Write string
+	
+	reprintQRcode(timeoutQR); // use "reprint" function to print the QR Code (fn=181)
+	
+}	
+ 
+void Adafruit_Thermal::reprintQRcode(uint16_t timeoutQR) { //Reprint a previously printed QR Code 
+	//Print QR code (fn=181) 
+	timeoutWait();
+	writeBytes(ASCII_GS, '(', 'k', 3);  
+	writeBytes(0, 49, 81, 48); 
+    //Time needed to print QR-Code.
+    timeoutSet(timeoutQR);
+	
+	prevByte = '\n'; /// Treat as if prior line is blank
+
+}
