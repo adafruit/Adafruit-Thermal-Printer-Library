@@ -39,7 +39,10 @@ inverseOn	KEYWORD2
 inverseOff	KEYWORD2
 setDefault	KEYWORD2
 
-
+underlineOn KEYWORD2
+underlineOff KEYWORD2
+printQRcode KEYWORD2
+reprintQRcode KEYWORD2
 
 
 
