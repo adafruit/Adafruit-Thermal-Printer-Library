@@ -88,6 +88,18 @@
 #define CODEPAGE_THAI2 45       //!< Thai 2 character code page
 #define CODEPAGE_CP856 46       //!< Hebrew character code page
 #define CODEPAGE_CP874 47       //!< Thai character code page
+
+//QR barcode models
+#define MODEL_1 49
+#define MODEL_2 50
+#define MICRO_QR 51
+
+//QR Code error correction levels
+#define LEVEL_L 48
+#define LEVEL_M 49
+#define LEVEL_Q 50
+#define LEVEL_H 51
+
 #else
 #define UPC_A 0
 #define UPC_E 1
@@ -214,6 +226,20 @@ public:
      * @param fromStream Stream to get bitmap data from
      */
     printBitmap(Stream *fromStream),
+    /*!
+     * @brief Prints a QR Code, Only works on printers with support for this feature
+     * @param text 
+     * @param errCorrect 
+     * @param moduleSize 
+     * @param model 
+     * @param timeoutQR 
+     */
+    printQRcode(char *text, uint8_t errCorrect=48, uint8_t moduleSize=3, uint8_t model=50, uint16_t timeoutQR=4000000L),
+    /*!
+     * @brief Re-Prints a QR Code, Only works on printers with support for this feature
+     * @param timeoutQR 
+     */
+    reprintQRcode(uint16_t timeoutQR=4000000L),
     /*!
      * @brief Sets text to normal mode
      */ 
