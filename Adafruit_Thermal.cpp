@@ -65,11 +65,19 @@ void Adafruit_Thermal::timeoutSet(unsigned long x) {
 
 // This function waits (if necessary) for the prior task to complete.
 void Adafruit_Thermal::timeoutWait() {
+#ifdef ESP8266
+  if(dtrEnabled) {
+    while(digitalRead(dtrPin) == HIGH){yield();};
+  } else {
+    while((long)(micros() - resumeTime) < 0L){yield();}; // (syntax is rollover-proof)
+  }
+#else
   if(dtrEnabled) {
     while(digitalRead(dtrPin) == HIGH);
   } else {
     while((long)(micros() - resumeTime) < 0L); // (syntax is rollover-proof)
   }
+#endif
 }
 
 // Printer performance may vary based on the power supply voltage,
