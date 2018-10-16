@@ -2,15 +2,13 @@
  * @file Adafruit_Thermal.h
  */
 
-#ifndef ADAFRUIT_THERMAL_H
-#define ADAFRUIT_THERMAL_H
+#ifndef Pos_Printer_H
+#define Pos_Printer_H
 
-/*!
- * *** EDIT THIS NUMBER ***  Printer firmware version is shown on test
- * page (hold feed button when connecting power).  Number used here is
- * integerized, e.g. 268 = 2.68 firmware.
- */
-#define PRINTER_FIRMWARE 268
+// *** EDIT THIS NUMBER ***  Printer firmware version is shown on test
+// page (hold feed button when connecting power).  Number used here is
+// integerized, e.g. 268 = 2.68 firmware.
+#define PRINTER_FIRMWARE 629    //268
 
 #include "Arduino.h"
 
@@ -213,19 +211,27 @@ public:
      * @param bitmap Bitmap data, from a file.
      * @param fromProgMem
      */
-    printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem=true),
+    printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem = true),
     /*!
-     * @brief Prints a bitmap
+     * @brief Prints a bitmap : Adafruit's code
+     * @param w Width of the image in pixels
+     * @param h Height of the image in pixels
+     * @param bitmap Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    printBitmap_ada(int w, int h, const uint8_t *bitmap, bool fromProgMem=true),
+    /*!
+     * @brief Prints a bitmap : Adafruit's code
      * @param w Width of the image in pixels
      * @param h Height of the image in pixels
      * @param fromStream Stream to get bitmap data from
      */
-    printBitmap(int w, int h, Stream *fromStream),
+    printBitmap_ada(int w, int h, Stream *fromStream),
     /*!
-     * @brief Prints a bitmap
+     * @brief Prints a bitmap : Adafruit's code
      * @param fromStream Stream to get bitmap data from
      */
-    printBitmap(Stream *fromStream),
+    printBitmap_ada(Stream *fromStream),
     /*!
      * @brief Prints a QR Code, Only works on printers with support for this feature
      * @param text 
@@ -243,6 +249,8 @@ public:
     /*!
      * @brief Sets text to normal mode
      */ 
+	  
+
     normal(),
     /*!
      * @brief Reset the printer
@@ -351,7 +359,57 @@ public:
     /*!
      * @brief Wakes device that was in sleep mode
      */
-    wake();
+    wake(),
+
+    /*!
+     * @brief Cuts the paper
+     */
+  	cut(),
+    /*!
+     * @brief Run beep
+     */
+  	beep(),
+    /*!
+     * @brief Define Bit Image
+     * @param w Width
+     * @param h Height
+     * @param bitmap Bitmap pointer
+     */
+    defineBitImage( int w, int h, const uint8_t *bitmap),
+    /*!
+     * @brief Print the defined Bit Image
+     * @param mode
+     */
+    printDefinedBitImage(int mode=0),
+    /*!
+     * @brief Print NV Bit Image
+     * @param n
+     * @param mode
+     */
+    printNVBitmap(int n, int mode=0),
+    /*!
+     * @brief Define NV Bitmap
+     * @param w Width
+     * @param h Height
+     * @param bitmap Bitmap pointer
+     */
+    defineNVBitmap(int w, int h, const uint8_t *bitmap),
+    /*!
+     * @brief Define NV Bitmap
+     * @param w1 First Width
+     * @param h1 First Height
+     * @param bitmap1 First Bitmap pointer
+     * @param w2 Second Width
+     * @param h2 Second Height
+     * @param bitmap2 Second Bitmap pointer
+     */
+    defineNVBitmap(int w1, int h1, const uint8_t *bitmap1,int w2, int h2, const uint8_t *bitmap2),
+    /*!
+     * @brief Sets beep duration
+     * @param sec seconds
+     */
+    setBeep(int sec);
+
   bool
     /*!
      * @brief Whether or not the printer has paper
@@ -372,14 +430,21 @@ private:
       dtrPin;         // DTR handshaking pin (experimental)
   boolean dtrEnabled; // True if DTR pin set & printer initialized
   unsigned long
-      resumeTime,   // Wait until micros() exceeds this before sending byte
-      dotPrintTime, // Time to print a single dot line, in microseconds
-      dotFeedTime;  // Time to feed a single dot line, in microseconds
-  void writeBytes(uint8_t a), writeBytes(uint8_t a, uint8_t b),
-      writeBytes(uint8_t a, uint8_t b, uint8_t c),
-      writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d),
-      setPrintMode(uint8_t mask), unsetPrintMode(uint8_t mask),
-      writePrintMode();
+    resumeTime,    // Wait until micros() exceeds this before sending byte
+    dotPrintTime,  // Time to print a single dot line, in microseconds
+    dotFeedTime;   // Time to feed a single dot line, in microseconds
+  void
+    writeBytes(uint8_t a),
+    writeBytes(uint8_t a, uint8_t b),
+    writeBytes(uint8_t a, uint8_t b, uint8_t c),
+    writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d),
+	// Riva addition _ Updated
+    writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g, uint8_t h),
+	
+    setPrintMode(uint8_t mask),
+    unsetPrintMode(uint8_t mask),
+    writePrintMode();
+
 };
 
-#endif // ADAFRUIT_THERMAL_H
+#endif // Pos_Printer_H

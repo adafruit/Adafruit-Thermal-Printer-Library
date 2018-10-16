@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------
-  Example sketch for Adafruit Thermal Printer library for Arduino.
+  Example sketch for POS Printer library for Arduino.
   Demonstrates the available gamut of barcodes.
   See 'A_printertest' sketch for a more generalized printing example.
 
@@ -34,8 +34,8 @@ void setup() {
   // wired up the same way (w/3-pin header into pins 5/6/7):
   pinMode(7, OUTPUT); digitalWrite(7, LOW);
 
-  mySerial.begin(19200);  // Initialize SoftwareSerial
-  //Serial1.begin(19200); // Use this instead if using hardware serial
+  mySerial.begin(9600);  // Initialize SoftwareSerial
+  //Serial1.begin(9600); // Use this instead if using hardware serial
   printer.begin();        // Init printer (same regardless of serial type)
 
   printer.justify('C');
@@ -50,6 +50,8 @@ void setup() {
 
   // Also note that strings passed to printBarcode() are always normal
   // RAM-resident strings; PROGMEM strings (e.g. F("123")) are NOT used.
+
+   printer.setBarcodeHeight(150);
 
   // UPC-A: 12 digits
   printer.print(F("UPC-A:"));
@@ -84,12 +86,15 @@ void setup() {
   // CODE 93: compressed version of Code 39?
   printer.print(F("CODE 93:"));
   printer.printBarcode("ADAFRUIT", CODE93);
-
+  
+/* Commented out because I can't get this one working yet
   // CODE 128: 2-255 characters (ASCII 0-127)
   printer.print(F("CODE128:"));
   printer.printBarcode("Adafruit", CODE128);
+*/
 
-  printer.feed(2);
+  printer.feed(10);
+  printer.cut();
   printer.setDefault(); // Restore printer to defaults
 }
 
