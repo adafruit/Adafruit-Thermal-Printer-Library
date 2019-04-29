@@ -614,6 +614,9 @@ void Adafruit_Thermal::setCharset(uint8_t val) {
 // Selects alt symbols for 'upper' ASCII values 0x80-0xFF
 void Adafruit_Thermal::setCodePage(uint8_t val) {
   if(val > 47) val = 47;
+  #if PRINTER_FIRMWARE >= 269
+  writeBytes(ASCII_FS, '.'); //Cancel Kanji character mode - https://github.com/adafruit/Adafruit-Thermal-Printer-Library/issues/29#issuecomment-459984214
+  #endif
   writeBytes(ASCII_ESC, 't', val);
 }
 
