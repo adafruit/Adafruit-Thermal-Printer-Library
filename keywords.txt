@@ -25,7 +25,6 @@ println	KEYWORD2
 printBarCode	KEYWORD2
 printFancyBarCode	KEYWORD2
 boldOn	KEYWORD2
-boldOff	KEYWORD2
 sleep	KEYWORD2
 wake	KEYWORD2
 setSize	KEYWORD2
@@ -34,10 +33,13 @@ feed	KEYWORD2
 tab	KEYWORD2
 justify	KEYWORD2
 doubleHeightOn	KEYWORD2
-doubleHeightOff	KEYWORD2
 inverseOn	KEYWORD2
 inverseOff	KEYWORD2
 setDefault	KEYWORD2
+setFont	KEYWORD2
+getMaxColumn	KEYWORD2
+getCharHeight	KEYWORD2
+getCharWidth	KEYWORD2
 
 
 
