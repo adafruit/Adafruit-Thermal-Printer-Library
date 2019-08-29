@@ -6,6 +6,10 @@ branches:
   except:
     - gh-pages
 
+ignore:
+  - *.md
+  - *.pde
+
 env:
   global:
      - PRETTYNAME="Adafruit Thermal Printer Library"
