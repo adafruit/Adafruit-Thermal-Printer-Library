@@ -25,6 +25,9 @@ jobs:
     - name: clang
       run: python3 ci/run-clang-format.py -e "ci/*" -e "bin/*" -r . 
 
+    - name: doxygen version
+      run: doxygen --version
+
     - name: doxygen
       env:
         GH_REPO_TOKEN: ${{ secrets.GH_REPO_TOKEN }}
