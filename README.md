@@ -1,3 +1,6 @@
+# Adafruit Thermal Printer Library [![Build Status](https://github.com/adafruit/Adafruit-Thermal-Printer-Library/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/Adafruit-Thermal-Printer-Library/actions)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit-Thermal-Printer-Library/html/index.html)
+
+
 This is an Arduino library for the Adafruit Thermal Printer.
 Pick one up at --> https://www.adafruit.com/product/597
 These printers use TTL serial to communicate, 2 pins are required.
