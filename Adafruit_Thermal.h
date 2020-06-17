@@ -160,6 +160,7 @@ public:
     feed(uint8_t x=1),
     /*!
      * @brief Feeds by the specified number of individual pixel rows 
+     * @param rows How many rows to feed
      */
     feedRows(uint8_t),
     /*!

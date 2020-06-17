@@ -163,6 +163,12 @@ size_t Adafruit_Thermal::write(uint8_t c) {
   return 1;
 }
 
+/*!
+  @def printDensity
+  Printing density, default: 100% (? can go higher, text is darker but fuzzy)
+  @def printBreakTime
+  Printing break time. Default: 500 uS
+*/
 void Adafruit_Thermal::begin(uint8_t heatTime) {
 
   // The printer can't start receiving data immediately upon power up --
@@ -202,16 +208,8 @@ void Adafruit_Thermal::begin(uint8_t heatTime) {
   // is n(D7-D5)*250us.
   // (Unsure of the default value for either -- not documented)
 
-/*!
-  @def printDensity
-  Printing density, default: 100% (? can go higher, text is darker but fuzzy)
- */
 #define printDensity 10
 
-/*!
-  @def printBreakTime
-  Printing break time. Default: 500 uS
-*/
 #define printBreakTime 2
 
   writeBytes(ASCII_DC2, '#', (printBreakTime << 5) | printDensity);
