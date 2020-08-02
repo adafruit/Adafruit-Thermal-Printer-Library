@@ -193,7 +193,7 @@ public:
      * @param text The specified text/number (the meaning varies based on the type of barcode) and type to write to the barcode
      * @param type Value from the datasheet or class-level variables like UPC-A. Note the type value changes depending on the firmware version so use class-level values where possible
      */
-    printBarcode(char *text, uint8_t type),
+    printBarcode(const char *text, uint8_t type),
     /*!
      * @brief Prints a bitmap
      * @param w Width of the image in pixels
