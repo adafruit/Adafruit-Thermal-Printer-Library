@@ -278,7 +278,7 @@ void Adafruit_Thermal::setBarcodeHeight(uint8_t val) { // Default is 50
   writeBytes(ASCII_GS, 'h', val);
 }
 
-void Adafruit_Thermal::printBarcode(char *text, uint8_t type) {
+void Adafruit_Thermal::printBarcode(const char *text, uint8_t type) {
   feed(1); // Recent firmware can't print barcode w/o feed first???
   writeBytes(ASCII_GS, 'H', 2);    // Print label below barcode
   writeBytes(ASCII_GS, 'w', 3);    // Barcode width 3 (0.375/1.0mm thin/thick)
