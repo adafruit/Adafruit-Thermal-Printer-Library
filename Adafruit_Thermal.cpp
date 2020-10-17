@@ -279,8 +279,6 @@ void Adafruit_Thermal::setDefault() {
   underlineOff();
   setBarcodeHeight(50);
   setSize('s');
-  setCharset(CHARSET_DENMARK1);
-  setCodePage(CODEPAGE_ISO_8859_1);
 }
 
 void Adafruit_Thermal::test() {
