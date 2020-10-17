@@ -1,7 +1,7 @@
 #######################################################
-#  keywords.txt - keywords file for the PosPrinter library
+#  keywords.txt - keywords file for the Thermal library
 
-#  Created by Anders Vestergaard of Aug 23th 2015
+#  Created by Adam Meyer of bildr Aug 10th 2011
 
 #  Released as MIT license
 
@@ -11,7 +11,7 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-PosPrinter	KEYWORD1
+Thermal	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)

@@ -49,7 +49,7 @@ void setup() {
   // over and over (which would happen if they were in loop() instead).
   // Some functions will feed a line when called, this is normal.
 
-  // Print the 500x85 pixel logo in Hal9klogo.h:
+  // Print the 500x85 pixel logo in adalogo.h:
   printer.printBitmap(adalogo_width, adalogo_height, adalogo_data);
   printer.feed();
 

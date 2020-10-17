@@ -2,8 +2,8 @@
  * @file Adafruit_Thermal.h
  */
 
-#ifndef Pos_Printer_H
-#define Pos_Printer_H
+#ifndef ADAFRUIT_THERMAL_H
+#define ADAFRUIT_THERMAL_H
 
 // *** EDIT THIS NUMBER ***  Printer firmware version is shown on test
 // page (hold feed button when connecting power).  Number used here is
@@ -447,4 +447,4 @@ private:
 
 };
 
-#endif // Pos_Printer_H
+#endif // ADAFRUIT_THERMAL_H
