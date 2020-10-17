@@ -651,7 +651,7 @@ void Adafruit_Thermal::printBitmap_ada(int w, int h, Stream *fromStream) {
   prevByte = '\n';
 }
 
-void Adafruit_Thermal::printBitmap(Stream *fromStream) {
+void Adafruit_Thermal::printBitmap_ada(Stream *fromStream) {
   uint8_t tmp;
   uint16_t width, height;
 
