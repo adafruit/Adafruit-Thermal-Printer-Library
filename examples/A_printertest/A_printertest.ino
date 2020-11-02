@@ -116,10 +116,15 @@ void setup() {
   //printer.beep();
 
   printer.sleep();      // Tell printer to sleep
-  delay(3000L);         // Sleep for 3 seconds
-  printer.wake();       // MUST wake() before printing again, even if reset
-  printer.setDefault(); // Restore printer to defaults
 }
 
 void loop() {
+    printer.loop();
+    static bool once;
+    if(millis() >= 4000 & !once)
+    {
+        printer.wake();       // MUST wake() before printing again, even if reset
+        printer.setDefault(); // Restore printer to defaults
+        once = true;
+    }
 }

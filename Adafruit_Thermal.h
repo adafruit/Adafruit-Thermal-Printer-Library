@@ -11,6 +11,7 @@
 #define PRINTER_FIRMWARE 629    //268
 
 #include "Arduino.h"
+#include <vector>
 
 // Barcode types and charsets
 #if PRINTER_FIRMWARE >= 264
@@ -104,12 +105,50 @@
 #define EAN13 2
 #define EAN8 3
 #define CODE39 4
-#define I25 5
-#define CODEBAR 6
+#define ITF 5
+#define CODABAR 6
 #define CODE93 7
 #define CODE128 8
 #define CODE11 9
 #define MSI 10
+#endif
+
+
+#ifdef DEBUG_PRINTER_
+#define DEBUG_(f_,...)     Serial.printf((f_), ##__VA_ARGS__)
+#define SERIAL_WRITE(c)     Serial.write(c)
+#else
+#define DEBUG_(f_,...)
+#define SERIAL_WRITE(c)
+#endif
+
+#define EXCESS_BYTES        75           //For next commands to be stored in internalBuffer.
+
+#ifdef ARDUINO_ARCH_ESP8266
+#define AVAILABLE_MEM   ESP.getMaxFreeBlockSize()
+#elif defined(ARDUINO_ARCH_ESP32)
+#define AVAILABLE_MEM   ESP.getMaxAllocHeap()
+#elif defined(__AVR__) || defined(__arm__)
+#ifdef __arm__      // Check https://github.com/mpflaga/Arduino-MemoryFree
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else  // __ARM__
+extern char *__brkval;
+#endif  // __arm__
+
+int freeMemory() {
+  char top;
+#ifdef __arm__
+  return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+  return &top - __brkval;
+#else  // __arm__
+  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif  // __arm__
+}
+#define AVAILABLE_MEM   freeMemory()
+#else
+#error "Define AVAILABLE_MEM for your MCU target at Adafruit_Printer.h L151"
 #endif
 
 /*!
@@ -139,6 +178,10 @@ public:
      * @param heatTime how much time to spend heating up the printer
      */
     begin(uint8_t heatTime=120),
+    /*!
+     * @brief Printer Loop
+     */
+    loop(),
     /*!
      * @brief Disables bold text
      */
@@ -203,15 +246,8 @@ public:
      * @param text The specified text/number (the meaning varies based on the type of barcode) and type to write to the barcode
      * @param type Value from the datasheet or class-level variables like UPC-A. Note the type value changes depending on the firmware version so use class-level values where possible
      */
-    printBarcode(const char *text, uint8_t type),
-    /*!
-     * @brief Prints a bitmap
-     * @param w Width of the image in pixels
-     * @param h Height of the image in pixels
-     * @param bitmap Bitmap data, from a file.
-     * @param fromProgMem
-     */
-    printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem = true),
+    printBarcode(char *text, uint8_t type),
+
     /*!
      * @brief Prints a bitmap : Adafruit's code
      * @param w Width of the image in pixels
@@ -233,24 +269,22 @@ public:
      */
     printBitmap_ada(Stream *fromStream),
     /*!
-     * @brief Prints a QR Code, Only works on printers with support for this feature
-     * @param text 
-     * @param errCorrect 
-     * @param moduleSize 
+     * @brief Store data and print QR Code, Only works on printers with support for this feature
+     * @param text The specified text/number
+     * @param errCorrect Error Correction level
+     * @param moduleSize Module Size
      * @param model 
-     * @param timeoutQR 
      */
-    printQRcode(char *text, uint8_t errCorrect=48, uint8_t moduleSize=3, uint8_t model=50, uint16_t timeoutQR=4000000L),
+    printQRcode(char *text, uint8_t errCorrect=48, uint8_t moduleSize=3, uint8_t model=50), 
     /*!
      * @brief Re-Prints a QR Code, Only works on printers with support for this feature
      * @param timeoutQR 
      */
-    reprintQRcode(uint16_t timeoutQR=4000000L),
+    reprintQRcode(),
+
     /*!
      * @brief Sets text to normal mode
      */ 
-	  
-
     normal(),
     /*!
      * @brief Reset the printer
@@ -362,6 +396,11 @@ public:
     wake(),
 
     /*!
+     * @brief Request paper availability from the printer
+     */
+    askForPaperAvailability(),
+
+    /*!
      * @brief Cuts the paper
      */
   	cut(),
@@ -410,7 +449,59 @@ public:
      */
     setBeep(int sec);
 
-  bool
+  int
+    /*!
+     * @brief Prints a bitmap
+     * @param w Width of the image in pixels
+     * @param h Height of the image in pixels
+     * @param bitmap Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    
+	printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem = true),
+    /*!
+     * @brief Define a bit image
+     * @param w Width of the image in pixels
+     * @param h Height of the image in pixels
+     * @param bitmap Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    defineBitImage( int w, int h, const uint8_t *bitmap, bool fromProgMem),
+    /*!
+     * @brief Define a NV bit image
+     * 
+     * Procedure to define NV image : 
+     * 1) Design the photo in Black&White, Make the column pixels 8 multiplier (16,24...)
+     * 2) Transpost the image : Rotate +90 CC then Flip Horizontally
+     * 3) Save as bmp image.
+     * 4) Use LCDAssistant.exe to extract image table.
+     * 5) Define image width = (width of origin image), image height (height of origin image). origin image : untransposed image
+     * 6) Use defineNVBitImage().
+     * @param w Width of the image in pixels
+     * @param h Height of the image in pixels
+     * @param bitmap Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    defineNVBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem),
+    /*!
+     * @brief Define 2 NV bit images
+     * 
+     * Procedure to define NV image : 
+     * 1) Design the photo in Black&White, Make the column pixels 8 multiplier (16,24...)
+     * 2) Transpost the image : Rotate +90 CC then Flip Horizontally
+     * 3) Save as bmp image.
+     * 4) Use LCDAssistant.exe to extract image table.
+     * 5) Define image width = (width of origin image), image height (height of origin image). origin image : untransposed image
+     * 6) Use defineNVBitImage().
+     * @param w1 Width of the image in pixels
+     * @param h1 Height of the image in pixels
+     * @param bitmap1 Bitmap data, from a file.
+     * @param w2 Width of the image in pixels
+     * @param h2 Height of the image in pixels
+     * @param bitmap2 Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    defineNVBitmap(int w1, int h1, const uint8_t *bitmap1,int w2, int h2, const uint8_t *bitmap2, bool fromProgMem),
     /*!
      * @brief Whether or not the printer has paper
      * @return Returns true if there is still paper
@@ -419,6 +510,7 @@ public:
 
 private:
   Stream *stream;
+  std::vector<uint8_t> internalBuffer;
   uint8_t printMode,
       prevByte,      // Last character issued to printer
       column,        // Last horizontal column printed
@@ -428,9 +520,15 @@ private:
       barcodeHeight, // Barcode height in dots, not including text
       maxChunkHeight,
       dtrPin;         // DTR handshaking pin (experimental)
-  boolean dtrEnabled; // True if DTR pin set & printer initialized
+  int 
+    paperStatus;   // Holding the result of askForPaperAvailability
+  boolean dtrEnabled, // True if DTR pin set & printer initialized
+    paperResultReady,
+    largeReserve,
+    askedForPaper;
   unsigned long
     resumeTime,    // Wait until micros() exceeds this before sending byte
+    lastWritingTime,//To build the next printing time (resumeTime) upun it
     dotPrintTime,  // Time to print a single dot line, in microseconds
     dotFeedTime;   // Time to feed a single dot line, in microseconds
   void
@@ -443,7 +541,8 @@ private:
 	
     setPrintMode(uint8_t mask),
     unsetPrintMode(uint8_t mask),
-    writePrintMode();
+    writePrintMode(),
+    storeInBuffer(uint8_t c);
 
 };
 

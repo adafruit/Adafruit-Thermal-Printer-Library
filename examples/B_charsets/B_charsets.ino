@@ -81,4 +81,5 @@ void dump() {
 }
 
 void loop() {
+    printer.loop();
 }

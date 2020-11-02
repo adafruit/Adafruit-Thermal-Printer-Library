@@ -99,4 +99,5 @@ void setup() {
 }
 
 void loop() {
+    printer.loop();
 }
