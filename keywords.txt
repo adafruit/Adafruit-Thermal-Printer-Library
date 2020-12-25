@@ -39,7 +39,29 @@ inverseOn	KEYWORD2
 inverseOff	KEYWORD2
 setDefault	KEYWORD2
 
-
+underlineOn KEYWORD2
+underlineOff KEYWORD2
+printQRcode KEYWORD2
+reprintQRcode KEYWORD2
+cut	KEYWORD2
+beep	KEYWORD2
+setCharset	KEYWORD2
+setCodePage	KEYWORD2
+printBitmap	KEYWORD2
+setBytes	KEYWORD2
+defineBitImage	KEYWORD2
+defineNVBitmap	KEYWORD2
+paperLevel	KEYWORD2
+reserveBytes	KEYWORD2
+hasPaper	KEYWORD2
+askForPaperAvailability KEYWORD2
+cut KEYWORD2
+beep	KEYWORD2
+printDefinedBitImage	KEYWORD2
+printNVBitmap	KEYWORD2
+printQRcode	KEYWORD2
+printBitmap_ada	KEYWORD2
+loop	KEYWORD2
 
 
 

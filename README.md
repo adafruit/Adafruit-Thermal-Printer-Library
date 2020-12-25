@@ -19,4 +19,3 @@ On your Linux box: (home directory)/sketchbook/libraries
 Adafruit invests time and resources providing this open source code.  Please support Adafruit and open-source hardware by purchasing products from Adafruit!
 
 Written by Limor Fried/Ladyada for Adafruit Industries, with contributions from the open source community.  Originally based on Thermal library from bildr.org
-MIT license, all text above must be included in any redistribution.

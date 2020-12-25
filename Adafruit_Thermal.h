@@ -5,14 +5,13 @@
 #ifndef ADAFRUIT_THERMAL_H
 #define ADAFRUIT_THERMAL_H
 
-/*!
- * *** EDIT THIS NUMBER ***  Printer firmware version is shown on test
- * page (hold feed button when connecting power).  Number used here is
- * integerized, e.g. 268 = 2.68 firmware.
- */
-#define PRINTER_FIRMWARE 268
+// *** EDIT THIS NUMBER ***  Printer firmware version is shown on test
+// page (hold feed button when connecting power).  Number used here is
+// integerized, e.g. 268 = 2.68 firmware.
+#define PRINTER_FIRMWARE 629    //268
 
 #include "Arduino.h"
+#include <vector>
 
 // Barcode types and charsets
 #if PRINTER_FIRMWARE >= 264
@@ -22,7 +21,7 @@
 #define EAN8 68   //!< EAN8 (JAN8) barcode system. 7-8 char
 #define CODE39 69 //!< CODE39 barcode system. 1<=num of chars
 #define ITF 70 //!< ITF barcode system. 1<=num of chars, must be an even number
-#define CODABAR 71 //!< CODABAR barcode system. 1<=num<=255
+#define CODEBAR 71 //!< CODEBAR barcode system. 1<=num<=255
 #define CODE93 72  //!< CODE93 barcode system. 1<=num<=255
 #define CODE128 73 //!< CODE128 barcode system. 2<=num<=255
 
@@ -88,6 +87,18 @@
 #define CODEPAGE_THAI2 45       //!< Thai 2 character code page
 #define CODEPAGE_CP856 46       //!< Hebrew character code page
 #define CODEPAGE_CP874 47       //!< Thai character code page
+
+//QR barcode models
+#define MODEL_1 49
+#define MODEL_2 50
+#define MICRO_QR 51
+
+//QR Code error correction levels
+#define LEVEL_L 48
+#define LEVEL_M 49
+#define LEVEL_Q 50
+#define LEVEL_H 51
+
 #else
 #define UPC_A 0
 #define UPC_E 1
@@ -95,11 +106,49 @@
 #define EAN8 3
 #define CODE39 4
 #define I25 5
+#define ITF I25
 #define CODEBAR 6
 #define CODE93 7
 #define CODE128 8
 #define CODE11 9
 #define MSI 10
+#endif
+// #define DEBUG_PRINTER_
+#ifdef DEBUG_PRINTER_
+#define DEBUG_(f_,...)     Serial.printf((f_), ##__VA_ARGS__)
+#define SERIAL_WRITE(c)     Serial.printf("%02X",c)
+#else
+#define DEBUG_(f_,...)
+#define SERIAL_WRITE(c)
+#endif
+
+#define EXCESS_BYTES        75           //For next commands to be stored in internalBuffer.
+
+#ifdef ARDUINO_ARCH_ESP8266
+#define AVAILABLE_MEM   ESP.getMaxFreeBlockSize()
+#elif defined(ARDUINO_ARCH_ESP32)
+#define AVAILABLE_MEM   ESP.getMaxAllocHeap()
+#elif defined(__AVR__) || defined(__arm__)
+#ifdef __arm__      // Check https://github.com/mpflaga/Arduino-MemoryFree
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else  // __ARM__
+extern char *__brkval;
+#endif  // __arm__
+
+int freeMemory() {
+  char top;
+#ifdef __arm__
+  return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+  return &top - __brkval;
+#else  // __arm__
+  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif  // __arm__
+}
+#define AVAILABLE_MEM   freeMemory()
+#else
+#error "Define AVAILABLE_MEM for your MCU target at Adafruit_Printer.h L151"
 #endif
 
 /*!
@@ -129,6 +178,10 @@ public:
      * @param heatTime how much time to spend heating up the printer
      */
     begin(uint8_t heatTime=120),
+    /*!
+     * @brief Printer Loop
+     */
+    loop(),
     /*!
      * @brief Disables bold text
      */
@@ -193,27 +246,42 @@ public:
      * @param text The specified text/number (the meaning varies based on the type of barcode) and type to write to the barcode
      * @param type Value from the datasheet or class-level variables like UPC-A. Note the type value changes depending on the firmware version so use class-level values where possible
      */
-    printBarcode(const char *text, uint8_t type),
+    printBarcode(char *text, uint8_t type),
+
     /*!
-     * @brief Prints a bitmap
+     * @brief Prints a bitmap : Adafruit's code
      * @param w Width of the image in pixels
      * @param h Height of the image in pixels
      * @param bitmap Bitmap data, from a file.
      * @param fromProgMem
      */
-    printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem=true),
+    printBitmap_ada(int w, int h, const uint8_t *bitmap, bool fromProgMem=true),
     /*!
-     * @brief Prints a bitmap
+     * @brief Prints a bitmap : Adafruit's code
      * @param w Width of the image in pixels
      * @param h Height of the image in pixels
      * @param fromStream Stream to get bitmap data from
      */
-    printBitmap(int w, int h, Stream *fromStream),
+    printBitmap_ada(int w, int h, Stream *fromStream),
     /*!
-     * @brief Prints a bitmap
+     * @brief Prints a bitmap : Adafruit's code
      * @param fromStream Stream to get bitmap data from
      */
-    printBitmap(Stream *fromStream),
+    printBitmap_ada(Stream *fromStream),
+    /*!
+     * @brief Store data and print QR Code, Only works on printers with support for this feature
+     * @param text The specified text/number
+     * @param errCorrect Error Correction level
+     * @param moduleSize Module Size
+     * @param model 
+     */
+    printQRcode(const char *text, uint8_t errCorrect=48, uint8_t moduleSize=3, uint8_t model=50), 
+    /*!
+     * @brief Re-Prints a QR Code, Only works on printers with support for this feature
+     * @param timeoutQR 
+     */
+    reprintQRcode(),
+
     /*!
      * @brief Sets text to normal mode
      */ 
@@ -325,16 +393,159 @@ public:
     /*!
      * @brief Wakes device that was in sleep mode
      */
-    wake();
-  bool
+    wake(),
+
     /*!
-     * @brief Whether or not the printer has paper
+     * @brief Request paper availability from the printer
+     */
+    askForPaperAvailability(),
+
+    /*!
+     * @brief Cuts the paper
+     */
+  	cut(),
+    /*!
+     * @brief Run beep
+     */
+  	beep(),
+    /*!
+     * @brief Define Bit Image
+     * @param w Width
+     * @param h Height
+     * @param bitmap Bitmap pointer
+     */
+    defineBitImage( int w, int h, const uint8_t *bitmap),
+    /*!
+     * @brief Print the defined Bit Image
+     * @param mode
+     */
+    printDefinedBitImage(int mode=0),
+    /*!
+     * @brief Print NV Bit Image
+     * @param n
+     * @param mode
+     */
+    printNVBitmap(int n, int mode=0),
+    /*!
+     * @brief Define NV Bitmap
+     * @param w Width
+     * @param h Height
+     * @param bitmap Bitmap pointer
+     */
+    defineNVBitmap(int w, int h, const uint8_t *bitmap),
+    /*!
+     * @brief Define NV Bitmap
+     * @param w1 First Width
+     * @param h1 First Height
+     * @param bitmap1 First Bitmap pointer
+     * @param w2 Second Width
+     * @param h2 Second Height
+     * @param bitmap2 Second Bitmap pointer
+     */
+    defineNVBitmap(int w1, int h1, const uint8_t *bitmap1,int w2, int h2, const uint8_t *bitmap2),
+    /*!
+     * @brief Sets beep duration
+     * @param sec seconds
+     */
+    setBeep(int sec),
+    /*!
+     * @brief Sets directly to librarie's internal buffer
+     * @param a byte to store
+     */
+    setBytes(uint8_t a),
+    /*!
+     * @brief Sets directly to librarie's internal buffer
+     * @param a byte to store
+     * @param b byte to store
+     */
+    setBytes(uint8_t a, uint8_t b),
+    /*!
+     * @brief Sets directly to librarie's internal buffer
+     * @param a byte to store
+     * @param b byte to store
+     * @param c byte to store
+     */
+    setBytes(uint8_t a, uint8_t b, uint8_t c),
+    /*!
+     * @brief Sets directly to librarie's internal buffer
+     * @param a byte to store
+     * @param b byte to store
+     * @param c byte to store
+     * @param d byte to store
+     */
+    setBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d);
+
+  int
+    /*!
+     * @brief Prints a bitmap
+     * @param w Width of the image in pixels
+     * @param h Height of the image in pixels
+     * @param bitmap Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    
+	printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem = true),
+    /*!
+     * @brief Define a bit image
+     * @param w Width of the image in pixels
+     * @param h Height of the image in pixels
+     * @param bitmap Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    defineBitImage( int w, int h, const uint8_t *bitmap, bool fromProgMem),
+    /*!
+     * @brief Define a NV bit image
+     * 
+     * Procedure to define NV image : 
+     * 1) Design the photo in Black&White, Make the column pixels 8 multiplier (16,24...)
+     * 2) Transpost the image : Rotate +90 CC then Flip Horizontally
+     * 3) Save as bmp image.
+     * 4) Use LCDAssistant.exe to extract image table.
+     * 5) Define image width = (width of origin image), image height (height of origin image). origin image : untransposed image
+     * 6) Use defineNVBitImage().
+     * @param w Width of the image in pixels
+     * @param h Height of the image in pixels
+     * @param bitmap Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    defineNVBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem),
+    /*!
+     * @brief Define 2 NV bit images
+     * 
+     * Procedure to define NV image : 
+     * 1) Design the photo in Black&White, Make the column pixels 8 multiplier (16,24...)
+     * 2) Transpost the image : Rotate +90 CC then Flip Horizontally
+     * 3) Save as bmp image.
+     * 4) Use LCDAssistant.exe to extract image table.
+     * 5) Define image width = (width of origin image), image height (height of origin image). origin image : untransposed image
+     * 6) Use defineNVBitImage().
+     * @param w1 Width of the image in pixels
+     * @param h1 Height of the image in pixels
+     * @param bitmap1 Bitmap data, from a file.
+     * @param w2 Width of the image in pixels
+     * @param h2 Height of the image in pixels
+     * @param bitmap2 Bitmap data, from a file.
+     * @param fromProgMem
+     */
+    defineNVBitmap(int w1, int h1, const uint8_t *bitmap1,int w2, int h2, const uint8_t *bitmap2, bool fromProgMem),
+    /*!
+     * @brief Non-Blocking function. Gets the paper level, Printers have 2 sensors : one at the end of roll, one at the near end.
+     * Make sure you call askForPaperAvailability() before 100ms at least of calling this function.
+     * @return 0 when it has no paper Roll ,, 1 when it's near out ,,2 when it has paper ,, -1 : timeout or short time call / No response.
+     */
+    paperLevel(),
+    reserveBytes(int size);
+bool 
+    /*!
+     * @brief Check Whether or not the printer has paper
+     * Blocking function.
      * @return Returns true if there is still paper
      */
     hasPaper();
 
 private:
   Stream *stream;
+  std::vector<uint8_t> internalBuffer;
   uint8_t printMode,
       prevByte,      // Last character issued to printer
       column,        // Last horizontal column printed
@@ -344,16 +555,30 @@ private:
       barcodeHeight, // Barcode height in dots, not including text
       maxChunkHeight,
       dtrPin;         // DTR handshaking pin (experimental)
-  boolean dtrEnabled; // True if DTR pin set & printer initialized
+  int 
+    paperStatus;   // Holding the result of askForPaperAvailability
+  boolean dtrEnabled, // True if DTR pin set & printer initialized
+    paperResultReady,
+    largeReserve,
+    askedForPaper;
   unsigned long
-      resumeTime,   // Wait until micros() exceeds this before sending byte
-      dotPrintTime, // Time to print a single dot line, in microseconds
-      dotFeedTime;  // Time to feed a single dot line, in microseconds
-  void writeBytes(uint8_t a), writeBytes(uint8_t a, uint8_t b),
-      writeBytes(uint8_t a, uint8_t b, uint8_t c),
-      writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d),
-      setPrintMode(uint8_t mask), unsetPrintMode(uint8_t mask),
-      writePrintMode();
+    resumeTime,    // Wait until micros() exceeds this before sending byte
+    lastWritingTime,//To build the next printing time (resumeTime) upun it
+    dotPrintTime,  // Time to print a single dot line, in microseconds
+    dotFeedTime;   // Time to feed a single dot line, in microseconds
+  void
+    writeBytes(uint8_t a),
+    writeBytes(uint8_t a, uint8_t b),
+    writeBytes(uint8_t a, uint8_t b, uint8_t c),
+    writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d),
+	// Riva addition _ Updated
+    writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g, uint8_t h),
+	
+    setPrintMode(uint8_t mask),
+    unsetPrintMode(uint8_t mask),
+    writePrintMode(),
+    storeInBuffer(uint8_t c);
+
 };
 
 #endif // ADAFRUIT_THERMAL_H

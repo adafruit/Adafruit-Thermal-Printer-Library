@@ -35,8 +35,7 @@
 // operation, a few rare specimens instead work at 9600.  If so, change
 // this constant.  This will NOT make printing slower!  The physical
 // print and feed mechanisms are the bottleneck, not the port speed.
-#define BAUDRATE                                                               \
-  19200 //!< How many bits per second the serial port should transfer
+#define BAUDRATE  19200  //!< How many bits per second the serial port should transfer
 
 // ASCII codes used by some of the printer config commands:
 #define ASCII_TAB '\t' //!< Horizontal tab
@@ -74,18 +73,17 @@ Adafruit_Thermal::Adafruit_Thermal(Stream *s, uint8_t dtr)
 
 // This method sets the estimated completion time for a just-issued task.
 void Adafruit_Thermal::timeoutSet(unsigned long x) {
-  if (!dtrEnabled)
-    resumeTime = micros() + x;
+  if(!dtrEnabled) {
+    resumeTime = (resumeTime > micros() ?  micros() : lastWritingTime) + x;
+  }
 }
 
 // This function waits (if necessary) for the prior task to complete.
 void Adafruit_Thermal::timeoutWait() {
-  if (dtrEnabled) {
-    while (digitalRead(dtrPin) == HIGH)
-      ;
+  if(dtrEnabled) {
+    while(digitalRead(dtrPin) == HIGH){yield();};
   } else {
-    while ((long)(micros() - resumeTime) < 0L)
-      ; // (syntax is rollover-proof)
+    while((long)(micros() - resumeTime) < 0L){yield();}; // (syntax is rollover-proof)
   }
 }
 
@@ -109,59 +107,175 @@ void Adafruit_Thermal::setTimes(unsigned long p, unsigned long f) {
 // commands, printing bitmaps or barcodes, etc.  Not when printing text.
 
 void Adafruit_Thermal::writeBytes(uint8_t a) {
-  timeoutWait();
-  stream->write(a);
-  timeoutSet(BYTE_TIME);
+  storeInBuffer(a);
 }
 
 void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b) {
-  timeoutWait();
-  stream->write(a);
-  stream->write(b);
-  timeoutSet(2 * BYTE_TIME);
+  storeInBuffer(a);
+  storeInBuffer(b);
 }
 
 void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
-  timeoutWait();
-  stream->write(a);
-  stream->write(b);
-  stream->write(c);
-  timeoutSet(3 * BYTE_TIME);
+  storeInBuffer(a);
+  storeInBuffer(b);
+  storeInBuffer(c);
 }
 
 void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-  timeoutWait();
-  stream->write(a);
-  stream->write(b);
-  stream->write(c);
-  stream->write(d);
-  timeoutSet(4 * BYTE_TIME);
+  storeInBuffer(a);
+  storeInBuffer(b);
+  storeInBuffer(c);
+  storeInBuffer(d);
+}
+
+// Riva Addition _ Updated
+void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g, uint8_t h) {
+  storeInBuffer(a);
+  storeInBuffer(b);
+  storeInBuffer(c);
+  storeInBuffer(d);
+  storeInBuffer(e);
+  storeInBuffer(f);
+  storeInBuffer(g);
+  storeInBuffer(h);
+}
+
+void Adafruit_Thermal::setBytes(uint8_t a) {
+  storeInBuffer(a);
+  DEBUG_("%02X",a);
+}
+
+void Adafruit_Thermal::setBytes(uint8_t a, uint8_t b) {
+  storeInBuffer(a);
+  storeInBuffer(b);
+  DEBUG_("%02X%02X",a,b);
+}
+
+void Adafruit_Thermal::setBytes(uint8_t a, uint8_t b, uint8_t c) {
+  storeInBuffer(a);
+  storeInBuffer(b);
+  storeInBuffer(c);
+  DEBUG_("%02X%02X%02X",a,b,c);
+}
+
+void Adafruit_Thermal::setBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
+  storeInBuffer(a);
+  storeInBuffer(b);
+  storeInBuffer(c);
+  storeInBuffer(d);
+  DEBUG_("%02X%02X%02X%02X",a,b,c,d);
 }
 
 // The underlying method for all high-level printing (e.g. println()).
 // The inherited Print class handles the rest!
 size_t Adafruit_Thermal::write(uint8_t c) {
+  storeInBuffer(c);
+  return 1;
+}
 
-  if (c != 0x13) { // Strip carriage returns
-    timeoutWait();
-    stream->write(c);
+
+void Adafruit_Thermal::storeInBuffer(uint8_t c)
+{
+
+#ifdef DEBUG_PRINTER_
+  static int count=0;
+  count++;
+  if(count%100==0)
+  {
+    DEBUG_("Stored 100 elements, internalBuffer.size()=%d, internalBuffer.capacity()=%d\n",internalBuffer.size(),internalBuffer.capacity());
+  }
+#endif
+  if (c != 13)
+  { // Strip carriage returns
+  
+
+
+    if(internalBuffer.size() < internalBuffer.capacity())
+        internalBuffer.emplace_back(c);
+    else
+        internalBuffer.push_back(c);
+
     unsigned long d = BYTE_TIME;
-    if ((c == '\n') || (column == maxColumn)) { // If newline or wrap
-      d += (prevByte == '\n') ? ((charHeight + lineSpacing) * dotFeedTime)
-                              : // Feed line
-               ((charHeight * dotPrintTime) +
-                (lineSpacing * dotFeedTime)); // Text line
+    if ((c == '\n') || (column == maxColumn))
+    {                                                                        // If newline or wrap
+      d += (prevByte == '\n') ? ((charHeight + lineSpacing) * dotFeedTime) : // Feed line
+               ((charHeight * dotPrintTime) + (lineSpacing * dotFeedTime));  // Text line
       column = 0;
       c = '\n'; // Treat wrap as newline on next pass
-    } else {
+    }
+    else
+    {
       column++;
     }
     timeoutSet(d);
     prevByte = c;
   }
-
-  return 1;
 }
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
+void Adafruit_Thermal::loop()
+{
+  if(internalBuffer.size())
+  {
+    if (micros() - resumeTime > 0)
+    {
+      stream->write(internalBuffer.at(0));
+      SERIAL_WRITE(internalBuffer.at(0));
+      internalBuffer.erase(internalBuffer.begin());
+      lastWritingTime = micros();
+    }
+  }
+  else if(largeReserve)
+  {
+      DEBUG_("Resizing capacity to 100\n");
+      internalBuffer.shrink_to_fit();
+      internalBuffer.reserve(100);
+      largeReserve = false;
+  }
+
+  if(askedForPaper)
+  {
+    static uint32_t prevmillis;
+    static uint8_t count;
+
+    if (millis() - prevmillis > 100 && count <= 10)
+    {
+      DEBUG_("Trying to read response\tstream->available()=%d\tcount=%d\n",stream->available(),count);
+      paperStatus = -1;
+      if (stream->available())
+      {
+        byte data = stream->read();
+        count = 0;
+        askedForPaper = false;
+        paperResultReady = true;
+        bool nearOut = ((data >> 3)  & 0x01);
+        bool noPaper = ((data >> 6)  & 0x01);
+        Serial.printf("noPaper=%d\tnearOut=%d\tdata="BYTE_TO_BINARY_PATTERN"\n",noPaper,nearOut,BYTE_TO_BINARY(data));
+
+        paperStatus = noPaper ? 0 : nearOut ? 1 : 2;
+      }
+      if(count == 10 && !paperResultReady)
+      {
+        count=0;
+        paperStatus = -1;
+        paperResultReady = true;
+        askedForPaper = false;
+      }
+
+      count++;
+      prevmillis = millis();
+    }
+  }
+}
+
 
 /*!
   @def printDensity
@@ -174,8 +288,8 @@ void Adafruit_Thermal::begin(uint8_t heatTime) {
   // The printer can't start receiving data immediately upon power up --
   // it needs a moment to cold boot and initialize.  Allow at least 1/2
   // sec of uptime before printer can receive data.
-  timeoutSet(500000L);
-
+  // timeoutSet(500000L);
+  internalBuffer.reserve(100);  //Reserve 100 bytes for better code performence (Less memory re-allocations)
   wake();
   reset();
 
@@ -208,11 +322,10 @@ void Adafruit_Thermal::begin(uint8_t heatTime) {
   // is n(D7-D5)*250us.
   // (Unsure of the default value for either -- not documented)
 
-#define printDensity 10
+#define printDensity   20 // 100% (? can go higher, text is darker but fuzzy)
+#define printBreakTime  1 // 500 uS
 
-#define printBreakTime 2
-
-  writeBytes(ASCII_DC2, '#', (printBreakTime << 5) | printDensity);
+  //writeBytes(ASCII_DC2, '#', (printBreakTime << 5) | printDensity);
 
   // Enable DTR pin if requested
   if (dtrPin < 255) {
@@ -221,9 +334,11 @@ void Adafruit_Thermal::begin(uint8_t heatTime) {
     dtrEnabled = true;
   }
 
-  dotPrintTime = 30000; // See comments near top of file for
-  dotFeedTime = 2100;   // an explanation of these values.
-  maxChunkHeight = 255;
+  dotPrintTime   =  1; // See comments near top of file for   30000  //Fastes print speed
+  dotFeedTime    =   1; // an explanation of these values.  2100     //Fastes print speed
+  maxChunkHeight =   255;
+  
+  setDefault();
 }
 
 // Reset printer to default state.
@@ -239,9 +354,10 @@ void Adafruit_Thermal::reset() {
 #if PRINTER_FIRMWARE >= 264
   // Configure tab stops on recent printers
   writeBytes(ASCII_ESC, 'D'); // Set tab stops...
-  writeBytes(4, 8, 12, 16);   // ...every 4 columns,
-  writeBytes(20, 24, 28, 0);  // 0 marks end-of-list.
+  writeBytes( 4,  8, 12, 16); // ...every 4 columns,
+  //writeBytes(20, 24, 28,  0); // 0 marks end-of-list.  //commented out to remove x( of first line
 #endif
+
 }
 
 // Reset text formatting parameters.
@@ -278,7 +394,7 @@ void Adafruit_Thermal::setBarcodeHeight(uint8_t val) { // Default is 50
   writeBytes(ASCII_GS, 'h', val);
 }
 
-void Adafruit_Thermal::printBarcode(const char *text, uint8_t type) {
+void Adafruit_Thermal::printBarcode(char *text, uint8_t type) {
   feed(1); // Recent firmware can't print barcode w/o feed first???
   writeBytes(ASCII_GS, 'H', 2);    // Print label below barcode
   writeBytes(ASCII_GS, 'w', 3);    // Barcode width 3 (0.375/1.0mm thin/thick)
@@ -373,16 +489,10 @@ void Adafruit_Thermal::boldOff() { unsetPrintMode(BOLD_MASK); }
 void Adafruit_Thermal::justify(char value) {
   uint8_t pos = 0;
 
-  switch (toupper(value)) {
-  case 'L':
-    pos = 0;
-    break;
-  case 'C':
-    pos = 1;
-    break;
-  case 'R':
-    pos = 2;
-    break;
+  switch(toupper(value)) {
+    case 'L': pos = 0; break;
+    case 'C': pos = 1; break;
+    case 'R': pos = 2; break;
   }
 
   writeBytes(ASCII_ESC, 'a', pos);
@@ -409,7 +519,9 @@ void Adafruit_Thermal::feedRows(uint8_t rows) {
   column = 0;
 }
 
-void Adafruit_Thermal::flush() { writeBytes(ASCII_FF); }
+void Adafruit_Thermal::flush() { 
+    writeBytes(ASCII_FF); 
+}
 
 void Adafruit_Thermal::setSize(char value) {
   uint8_t size;
@@ -448,10 +560,161 @@ void Adafruit_Thermal::underlineOn(uint8_t weight) {
 
 void Adafruit_Thermal::underlineOff() { writeBytes(ASCII_ESC, '-', 0); }
 
-void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap,
-                                   bool fromProgMem) {
-  int rowBytes, rowBytesClipped, rowStart, chunkHeight, chunkHeightLimit, x, y,
-      i;
+int Adafruit_Thermal::printBitmap( int w, int h, const uint8_t *bitmap, bool fromProgMem) {
+
+  int rowBytes, rowBytesClipped, rowStart, chunkHeight, x, y, i;
+
+  rowBytes = (w + 7) / 8; // Round up to next byte boundary
+  DEBUG_("h*rowBytes=%d maxFreeBlockSize()=%d, internalBuffer.size()=%d\n",h * rowBytes,AVAILABLE_MEM,internalBuffer.size());
+  uint32_t bytesToReserve = h * rowBytes + 8 + internalBuffer.size() + EXCESS_BYTES;
+  if (bytesToReserve > AVAILABLE_MEM)
+  {
+    return 1;
+  }
+  else
+  {
+
+    DEBUG_("Reserving %d Bytes\n",bytesToReserve);
+    internalBuffer.reserve(bytesToReserve);
+    largeReserve = true;
+  }
+
+  DEBUG_("SendingBytes\n");
+  writeBytes(ASCII_GS, 'v', '0', 0, rowBytes % 256, rowBytes / 256, h % 256, h / 256);
+  i = 0;
+  for(y=0; y < h; y++) {
+    for(x=0; x < rowBytes; x++, i++) {
+      writeBytes(fromProgMem ? pgm_read_byte(bitmap + i) : *(bitmap+i));
+    }
+  }
+  DEBUG_("setting Timeout\n");
+  timeoutSet(h * dotPrintTime);
+  prevByte = '\n';
+
+  DEBUG_("Returning 0\n");
+  return 0;
+}
+
+//this is a ridiculous vertical dot print define, not a horizontal raster.
+//to print a c header string, you must transpose (rotate and flip) and image first
+//also beware of switched height vs width when the image is transposed
+int Adafruit_Thermal::defineBitImage( int w, int h, const uint8_t *bitmap, bool fromProgMem) {
+
+  int colBytes, rowBytes, x, y, i;
+
+  rowBytes = (w + 7) / 8; // Round up to next byte boundary
+  colBytes = (h + 7) / 8;
+  if (h * rowBytes + internalBuffer.size() + EXCESS_BYTES > AVAILABLE_MEM)
+  {
+    return 1;
+  }
+  else
+  {
+    internalBuffer.reserve(h * rowBytes + 4 + internalBuffer.size() + EXCESS_BYTES);
+    largeReserve = true;
+  }
+  writeBytes(0x1D, 0x2A, rowBytes, colBytes);
+  i = 0;
+  for(y=0; y < h; y++) {
+    for(x=0; x < rowBytes; x++, i++) {
+      writeBytes(fromProgMem ? pgm_read_byte(bitmap + (i)) : *(bitmap +i));
+    }
+  }
+  timeoutSet(h * dotPrintTime);
+  prevByte = '\n';
+  return 0;
+}
+
+void Adafruit_Thermal::printDefinedBitImage(int mode){
+  writeBytes(0x1D, 0x2F, mode);
+}
+
+//this is a ridiculous vertical dot print, not a horizontal raster.
+//to print a c header string, you must transpose (rotate and flip) and image first
+//also beware of switched height vs width when the image is transposed
+//n=1 NV images
+int Adafruit_Thermal::defineNVBitmap( int w, int h, const uint8_t *bitmap, bool fromProgMem) {
+  int colBytes, rowBytes, x, y, i;
+
+  rowBytes = (w / 8); //Round up to next byte boundary for columns, which are transposed rows
+  colBytes = (h + 7) / 8;
+  DEBUG_("w*colBytes=%d maxFreeBlockSize()=%d, internalBuffer.size()=%d\n",w*colBytes,AVAILABLE_MEM,internalBuffer.size());
+
+  uint32_t bytesToReserve = w*colBytes + 7 + internalBuffer.size() + EXCESS_BYTES;
+  if ( bytesToReserve > AVAILABLE_MEM)
+  {
+    return 1;
+  }
+  else
+  {
+    DEBUG_("Reserving %d bytes\n",bytesToReserve);
+    internalBuffer.reserve(bytesToReserve);
+    largeReserve = true;
+  }
+  DEBUG_("SendingBytes\n");
+
+  writeBytes(0x1C, 0x71, 1);
+  writeBytes(rowBytes % 256, rowBytes / 256, colBytes % 256, colBytes / 256);
+  i = 0;
+  for(y=0; y < colBytes; y++) {
+    for(x=0; x < rowBytes * 8; x++, i++) {
+      writeBytes(fromProgMem ? pgm_read_byte(bitmap + i) : *(bitmap + i));
+    }
+  }
+  DEBUG_("Returning 0\n");
+  return 0;
+}
+
+//n=2 NV images
+int Adafruit_Thermal::defineNVBitmap( int w1, int h1, const uint8_t *bitmap1, int w2, int h2, const uint8_t *bitmap2, bool fromProgMem) {
+  int colBytes, rowBytes, rowBytesClipped, rowStart, chunkHeight, x, y, i;
+
+  rowBytes = (w1 / 8); //Round up to next byte boundary for columns, which are transposed rows
+  colBytes = (h1 +7)/ 8;
+  if ((h1 * w1 / 8) + (h2 * w2 / 8) + 11 + internalBuffer.size() + EXCESS_BYTES > AVAILABLE_MEM)
+  {
+    return 1;
+  }
+  else
+  {
+    internalBuffer.reserve((h1 * w1 / 8) + (h2 * w2 / 8) + 11 + internalBuffer.size() + EXCESS_BYTES);
+    largeReserve = true;
+  }
+
+  //write n=1 image
+  writeBytes(0x1C, 0x71, 2);
+  writeBytes(rowBytes % 256, rowBytes / 256, colBytes % 256, colBytes / 256);
+  i = 0;
+  for(y=0; y < colBytes; y++) {
+    for(x=0; x < rowBytes * 8; x++, i++) {
+      writeBytes(fromProgMem ? pgm_read_byte(bitmap1 + i): *(bitmap1 + i) );
+    }
+  }
+
+  //write n=2 image
+  rowBytes = (w2 / 8);
+  colBytes = (h2 + 7) / 8;
+  writeBytes(rowBytes % 256, rowBytes / 256, colBytes % 256, colBytes / 256);
+  i = 0;
+  for(y=0; y < colBytes; y++) {
+    for(x=0; x < rowBytes*8; x++, i++) {
+      writeBytes(fromProgMem ? pgm_read_byte(bitmap2 + i): *(bitmap2 + i) );
+    }
+  }
+
+  return 0;
+}
+
+void Adafruit_Thermal::printNVBitmap(int n, int mode){
+	writeBytes(0x1C, 0x70, n, mode);
+}
+
+
+
+void Adafruit_Thermal::printBitmap_ada(
+ int w, int h, const uint8_t *bitmap, bool fromProgMem) {
+  int rowBytes, rowBytesClipped, rowStart, chunkHeight, chunkHeightLimit,
+      x, y, i;
 
   rowBytes = (w + 7) / 8; // Round up to next byte boundary
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
@@ -473,7 +736,7 @@ void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap,
     if (chunkHeight > chunkHeightLimit)
       chunkHeight = chunkHeightLimit;
 
-    writeBytes(ASCII_DC2, '*', chunkHeight, rowBytesClipped);
+    writeBytes(ASCII_ESC, '*', chunkHeight, rowBytesClipped); //ASCII_DC2
 
     for (y = 0; y < chunkHeight; y++) {
       for (x = 0; x < rowBytesClipped; x++, i++) {
@@ -487,9 +750,9 @@ void Adafruit_Thermal::printBitmap(int w, int h, const uint8_t *bitmap,
   prevByte = '\n';
 }
 
-void Adafruit_Thermal::printBitmap(int w, int h, Stream *fromStream) {
-  int rowBytes, rowBytesClipped, rowStart, chunkHeight, chunkHeightLimit, x, y,
-      i, c;
+void Adafruit_Thermal::printBitmap_ada(int w, int h, Stream *fromStream) {
+  int rowBytes, rowBytesClipped, rowStart, chunkHeight, chunkHeightLimit,
+      x, y, i, c;
 
   rowBytes = (w + 7) / 8; // Round up to next byte boundary
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
@@ -511,7 +774,7 @@ void Adafruit_Thermal::printBitmap(int w, int h, Stream *fromStream) {
     if (chunkHeight > chunkHeightLimit)
       chunkHeight = chunkHeightLimit;
 
-    writeBytes(ASCII_DC2, '*', chunkHeight, rowBytesClipped);
+    writeBytes(ASCII_ESC, '*', chunkHeight, rowBytesClipped); //ASCII_DC2
 
     for (y = 0; y < chunkHeight; y++) {
       for (x = 0; x < rowBytesClipped; x++) {
@@ -530,7 +793,7 @@ void Adafruit_Thermal::printBitmap(int w, int h, Stream *fromStream) {
   prevByte = '\n';
 }
 
-void Adafruit_Thermal::printBitmap(Stream *fromStream) {
+void Adafruit_Thermal::printBitmap_ada(Stream *fromStream) {
   uint8_t tmp;
   uint16_t width, height;
 
@@ -540,7 +803,7 @@ void Adafruit_Thermal::printBitmap(Stream *fromStream) {
   tmp = fromStream->read();
   height = (fromStream->read() << 8) + tmp;
 
-  printBitmap(width, height, fromStream);
+  printBitmap_ada(width, height, fromStream);
 }
 
 // Take the printer offline. Print commands sent after this will be
@@ -570,7 +833,7 @@ void Adafruit_Thermal::wake() {
   timeoutSet(0);   // Reset timeout counter
   writeBytes(255); // Wake
 #if PRINTER_FIRMWARE >= 264
-  delay(50);
+  timeoutSet(50000L);
   writeBytes(ASCII_ESC, '8', 0, 0); // Sleep off (important!)
 #else
   // Datasheet recommends a 50 mS delay before issuing further commands,
@@ -584,27 +847,53 @@ void Adafruit_Thermal::wake() {
 #endif
 }
 
+// Blocking Functions
 // Check the status of the paper using the printer's self reporting
-// ability.  Returns true for paper, false for no paper.
-// Might not work on all printers!
+// ability.  Returns true for paper, false for no paper.// Might not work on all printers!
+
 bool Adafruit_Thermal::hasPaper() {
 #if PRINTER_FIRMWARE >= 264
-  writeBytes(ASCII_ESC, 'v', 0);
+    writeBytes(ASCII_ESC, 'v', 0);
 #else
-  writeBytes(ASCII_GS, 'r', 0);
+    writeBytes(ASCII_GS, 'r', 0);
 #endif
 
-  int status = -1;
-  for (uint8_t i = 0; i < 10; i++) {
-    if (stream->available()) {
-      status = stream->read();
-      break;
+    int status = -1;
+    for (uint8_t i = 0; i < 10; i++)
+    {
+        if (stream->available())
+        {
+            status = stream->read();
+            break;
+        }
+        delay(100);
     }
-    delay(100);
-  }
 
-  return !(status & 0b00000100);
+    return !(status & 0b00000100);
 }
+
+//non-Blocking Function
+// Printers have 2 sensors : one at the end of roll, one at the near end.
+// Check the status of the paper using the printer's self reporting
+// ability.  Returns 0 when it has no paper Roll ,, 1 when it's near out ,,2 when it has paper ,, -1 : timeout or short time / No response.
+// Might not work on all printers!
+int Adafruit_Thermal::paperLevel()
+{
+  if (paperResultReady)
+  {
+    paperResultReady = false;
+    int result = paperStatus;
+    paperStatus = -1;
+    return result;
+  }
+  else
+    return -1;
+}
+void Adafruit_Thermal::askForPaperAvailability() {
+  writeBytes(0x10, 0x04, 4);
+  askedForPaper = true;
+}
+
 
 void Adafruit_Thermal::setLineHeight(int val) {
   if (val < 24)
@@ -645,4 +934,90 @@ void Adafruit_Thermal::setCharSpacing(int spacing) {
   writeBytes(ASCII_ESC, ' ', spacing);
 }
 
+// Cut paper.
+void Adafruit_Thermal::cut(){
+  writeBytes(ASCII_GS, 'V', 0);
+}
+
+// Make printer beep
+void Adafruit_Thermal::beep(){
+  writeBytes(ASCII_ESC, 'o');
+  //writeBytes(30);
+}
+
+void Adafruit_Thermal::setBeep(int sec) {
+	writeBytes(ASCII_GS, 'o', sec);
+}
+
 // -------------------------------------------------------------------------
+
+// Standard ESC/POS commands that work only on printers that support these commands
+
+void Adafruit_Thermal::printQRcode(const char *text, uint8_t errCorrect, uint8_t moduleSize, uint8_t model) {	//Store data and print QR Code
+	
+	//Set QR-Code model
+	//Range
+	// 49 selects Model 1
+	// 50 selects Model 2
+	// 51 selects Micro QR-Code
+	if (model<49 || model>51) model=50 ; // if out of allowed range set model 2 as fallback. Some printers ignore this setting and use e.g. Model 2 in any case!
+	writeBytes(ASCII_GS, '(', 'k', 4); 
+	writeBytes(0, 49, 65, model);  
+	writeBytes(0);
+	
+	//Module size in pixels (fn=167)
+	//Range: 
+	//1 <= n <= 16
+	if (moduleSize<1 || moduleSize>16) moduleSize=3; // Default = 3 	
+	writeBytes(ASCII_GS, '(', 'k');  
+	writeBytes(3, 0, 49, 67);  
+	writeBytes(moduleSize); 
+	
+    //Set error correction level fn=169    
+	  // 48 selects error correction level L 7%
+    // 49 selects error correction level M 15%
+    // 50 selects error correction level Q 25%
+    // 51 selects error correction level H 30%
+	if (errCorrect<48 || errCorrect>51) errCorrect=48; // if incorrect level is specified take level l
+	writeBytes(ASCII_GS, '(', 'k');  
+	writeBytes(3, 0, 49, 69);  	
+	writeBytes(errCorrect); //Default = 48 
+	
+	//Store the QR Code data in the symbol storage area.  (fn=180) 
+	writeBytes(ASCII_GS, '(', 'k');    
+	uint16_t len = strlen(text);
+		
+	writeBytes((uint8_t)((len+3)%256), (uint8_t)((len+3)/256)); //pL , pH -> pL and pH specify the parameter count (pL + pH x 256) in bytes after cn
+	writeBytes(49, 80, 48);   
+    for(uint16_t i=0; i<len; i++) writeBytes(text[i]); // Write string
+	
+	reprintQRcode(); // use "reprint" function to print the QR Code (fn=181)
+	
+}	
+ 
+void Adafruit_Thermal::reprintQRcode() { //Reprint a previously printed QR Code 
+	//Print QR code (fn=181) 
+	writeBytes(ASCII_GS, '(', 'k', 3);  
+	writeBytes(0, 49, 81, 48); 
+    //Time needed to print QR-Code.
+	
+	prevByte = '\n'; /// Treat as if prior line is blank
+
+}
+
+int Adafruit_Thermal::reserveBytes(int size){
+  uint32_t bytesToReserve = size + internalBuffer.size() + EXCESS_BYTES;
+  if ( bytesToReserve > AVAILABLE_MEM)
+  {
+    return 1;
+  }
+  else
+  {
+    DEBUG_("Reserving %d bytes\n",bytesToReserve);
+    internalBuffer.reserve(bytesToReserve);
+    if (bytesToReserve > 100)
+      largeReserve = true;
+  }
+  return 0;
+
+}
