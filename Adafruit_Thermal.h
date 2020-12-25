@@ -21,7 +21,7 @@
 #define EAN8 68   //!< EAN8 (JAN8) barcode system. 7-8 char
 #define CODE39 69 //!< CODE39 barcode system. 1<=num of chars
 #define ITF 70 //!< ITF barcode system. 1<=num of chars, must be an even number
-#define CODABAR 71 //!< CODABAR barcode system. 1<=num<=255
+#define CODEBAR 71 //!< CODEBAR barcode system. 1<=num<=255
 #define CODE93 72  //!< CODE93 barcode system. 1<=num<=255
 #define CODE128 73 //!< CODE128 barcode system. 2<=num<=255
 
@@ -105,18 +105,18 @@
 #define EAN13 2
 #define EAN8 3
 #define CODE39 4
-#define ITF 5
-#define CODABAR 6
+#define I25 5
+#define ITF I25
+#define CODEBAR 6
 #define CODE93 7
 #define CODE128 8
 #define CODE11 9
 #define MSI 10
 #endif
-
-
+// #define DEBUG_PRINTER_
 #ifdef DEBUG_PRINTER_
 #define DEBUG_(f_,...)     Serial.printf((f_), ##__VA_ARGS__)
-#define SERIAL_WRITE(c)     Serial.write(c)
+#define SERIAL_WRITE(c)     Serial.printf("%02X",c)
 #else
 #define DEBUG_(f_,...)
 #define SERIAL_WRITE(c)
@@ -275,7 +275,7 @@ public:
      * @param moduleSize Module Size
      * @param model 
      */
-    printQRcode(char *text, uint8_t errCorrect=48, uint8_t moduleSize=3, uint8_t model=50), 
+    printQRcode(const char *text, uint8_t errCorrect=48, uint8_t moduleSize=3, uint8_t model=50), 
     /*!
      * @brief Re-Prints a QR Code, Only works on printers with support for this feature
      * @param timeoutQR 
@@ -447,7 +447,33 @@ public:
      * @brief Sets beep duration
      * @param sec seconds
      */
-    setBeep(int sec);
+    setBeep(int sec),
+    /*!
+     * @brief Sets directly to librarie's internal buffer
+     * @param a byte to store
+     */
+    setBytes(uint8_t a),
+    /*!
+     * @brief Sets directly to librarie's internal buffer
+     * @param a byte to store
+     * @param b byte to store
+     */
+    setBytes(uint8_t a, uint8_t b),
+    /*!
+     * @brief Sets directly to librarie's internal buffer
+     * @param a byte to store
+     * @param b byte to store
+     * @param c byte to store
+     */
+    setBytes(uint8_t a, uint8_t b, uint8_t c),
+    /*!
+     * @brief Sets directly to librarie's internal buffer
+     * @param a byte to store
+     * @param b byte to store
+     * @param c byte to store
+     * @param d byte to store
+     */
+    setBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d);
 
   int
     /*!
@@ -503,7 +529,16 @@ public:
      */
     defineNVBitmap(int w1, int h1, const uint8_t *bitmap1,int w2, int h2, const uint8_t *bitmap2, bool fromProgMem),
     /*!
-     * @brief Whether or not the printer has paper
+     * @brief Non-Blocking function. Gets the paper level, Printers have 2 sensors : one at the end of roll, one at the near end.
+     * Make sure you call askForPaperAvailability() before 100ms at least of calling this function.
+     * @return 0 when it has no paper Roll ,, 1 when it's near out ,,2 when it has paper ,, -1 : timeout or short time call / No response.
+     */
+    paperLevel(),
+    reserveBytes(int size);
+bool 
+    /*!
+     * @brief Check Whether or not the printer has paper
+     * Blocking function.
      * @return Returns true if there is still paper
      */
     hasPaper();
