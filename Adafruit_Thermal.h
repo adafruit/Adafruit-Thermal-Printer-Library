@@ -74,15 +74,15 @@
 
 // Barcode types used with GS k m
 enum barcodes {
-  UPC_A,   //!< UPC-A barcode system. 11-12 char
-  UPC_E,   //!< UPC-E barcode system. 11-12 char
-  EAN13,   //!< EAN13 (JAN13) barcode system. 12-13 char
-  EAN8,    //!< EAN8 (JAN8) barcode system. 7-8 char
-  CODE39,  //!< CODE39 barcode system. 1<=num of chars
-  ITF,     //!< ITF barcode system. 1<=num of chars, must be an even number
-  CODABAR, //!< CODABAR barcode system. 1<=num<=255
-  CODE93,  //!< CODE93 barcode system. 1<=num<=255
-  CODE128, //!< CODE128 barcode system. 2<=num<=255
+  UPC_A,   ///< UPC-A barcode system. 11-12 char
+  UPC_E,   ///< UPC-E barcode system. 11-12 char
+  EAN13,   ///< EAN13 (JAN13) barcode system. 12-13 char
+  EAN8,    ///< EAN8 (JAN8) barcode system. 7-8 char
+  CODE39,  ///< CODE39 barcode system. 1<=num of chars
+  ITF,     ///< ITF barcode system. 1<=num of chars, must be an even number
+  CODABAR, ///< CODABAR barcode system. 1<=num<=255
+  CODE93,  ///< CODE93 barcode system. 1<=num<=255
+  CODE128, ///< CODE128 barcode system. 2<=num<=255
 };
 
 /*!
