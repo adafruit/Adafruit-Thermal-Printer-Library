@@ -84,8 +84,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6098a93bf1cc75be17e42cdfd18f0046"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___thermal.html#a6098a93bf1cc75be17e42cdfd18f0046">write</a> (uint8_t c)</td></tr>
 <tr class="memdesc:a6098a93bf1cc75be17e42cdfd18f0046"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a character to the thermal printer.  <a href="#a6098a93bf1cc75be17e42cdfd18f0046">More...</a><br /></td></tr>
 <tr class="separator:a6098a93bf1cc75be17e42cdfd18f0046"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a538c53ff130966c3a211d3af78fc9cf7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___thermal.html#a538c53ff130966c3a211d3af78fc9cf7">begin</a> (uint8_t heatTime=120)</td></tr>
-<tr class="separator:a538c53ff130966c3a211d3af78fc9cf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa52b03c18035e457af31af74cdfcfca8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___thermal.html#aa52b03c18035e457af31af74cdfcfca8">begin</a> (uint16_t version=268)</td></tr>
+<tr class="separator:aa52b03c18035e457af31af74cdfcfca8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81c0980babc31401355bbeadf1fd7cc2"><td class="memItemLeft" align="right" valign="top"><a id="a81c0980babc31401355bbeadf1fd7cc2"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___thermal.html#a81c0980babc31401355bbeadf1fd7cc2">boldOff</a> ()</td></tr>
 <tr class="memdesc:a81c0980babc31401355bbeadf1fd7cc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables bold text. <br /></td></tr>
@@ -187,6 +187,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:aa07ea6c16d3bd0a6f68816103f389198"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___thermal.html#aa07ea6c16d3bd0a6f68816103f389198">setTimes</a> (unsigned long, unsigned long)</td></tr>
 <tr class="memdesc:aa07ea6c16d3bd0a6f68816103f389198"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets print and feed speed.  <a href="#aa07ea6c16d3bd0a6f68816103f389198">More...</a><br /></td></tr>
 <tr class="separator:aa07ea6c16d3bd0a6f68816103f389198"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a346e3143d6cb96857943a9e93360c606"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___thermal.html#a346e3143d6cb96857943a9e93360c606">setHeatConfig</a> (uint8_t dots=11, uint8_t time=120, uint8_t interval=40)</td></tr>
+<tr class="memdesc:a346e3143d6cb96857943a9e93360c606"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets print head heating configuration.  <a href="#a346e3143d6cb96857943a9e93360c606">More...</a><br /></td></tr>
+<tr class="separator:a346e3143d6cb96857943a9e93360c606"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c6b38ab849bf8a1988551467233d35d"><td class="memItemLeft" align="right" valign="top"><a id="a5c6b38ab849bf8a1988551467233d35d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___thermal.html#a5c6b38ab849bf8a1988551467233d35d">sleep</a> ()</td></tr>
 <tr class="memdesc:a5c6b38ab849bf8a1988551467233d35d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Puts the printer into a low-energy state immediately. <br /></td></tr>
@@ -312,8 +315,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="a538c53ff130966c3a211d3af78fc9cf7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a538c53ff130966c3a211d3af78fc9cf7">&#9670;&nbsp;</a></span>begin()</h2>
+<a id="aa52b03c18035e457af31af74cdfcfca8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa52b03c18035e457af31af74cdfcfca8">&#9670;&nbsp;</a></span>begin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -321,15 +324,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
         <tr>
           <td class="memname">void Adafruit_Thermal::begin </td>
           <td>(</td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>heatTime</em> = <code>120</code></td><td>)</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>version</em> = <code>268</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">heatTime</td><td>how much time to spend heating up the printer </td></tr>
+    <tr><td class="paramname">version</td><td>firmware version as integer, e.g. 268 = 2.68 firmware </td></tr>
   </table>
   </dd>
 </dl>
@@ -785,6 +788,50 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
   <table class="params">
     <tr><td class="paramname">p</td><td>print speed </td></tr>
     <tr><td class="paramname">f</td><td>feed speed </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a346e3143d6cb96857943a9e93360c606"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a346e3143d6cb96857943a9e93360c606">&#9670;&nbsp;</a></span>setHeatConfig()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Adafruit_Thermal::setHeatConfig </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>dots</em> = <code>11</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>time</em> = <code>120</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>interval</em> = <code>40</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets print head heating configuration. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dots</td><td>max printing dots, 8 dots per increment </td></tr>
+    <tr><td class="paramname">time</td><td>heating time, 10us per increment </td></tr>
+    <tr><td class="paramname">interval</td><td>heating interval, 10 us per increment </td></tr>
   </table>
   </dd>
 </dl>
