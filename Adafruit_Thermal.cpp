@@ -142,7 +142,7 @@ void Adafruit_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 // The inherited Print class handles the rest!
 size_t Adafruit_Thermal::write(uint8_t c) {
 
-  if (c != 0x13) { // Strip carriage returns
+  if (c != 13) { // Strip carriage returns
     timeoutWait();
     stream->write(c);
     unsigned long d = BYTE_TIME;
@@ -169,7 +169,9 @@ size_t Adafruit_Thermal::write(uint8_t c) {
   @def printBreakTime
   Printing break time. Default: 500 uS
 */
-void Adafruit_Thermal::begin(uint8_t heatTime) {
+void Adafruit_Thermal::begin(uint16_t version) {
+
+  firmware = version;
 
   // The printer can't start receiving data immediately upon power up --
   // it needs a moment to cold boot and initialize.  Allow at least 1/2
@@ -179,26 +181,7 @@ void Adafruit_Thermal::begin(uint8_t heatTime) {
   wake();
   reset();
 
-  // ESC 7 n1 n2 n3 Setting Control Parameter Command
-  // n1 = "max heating dots" 0-255 -- max number of thermal print head
-  //      elements that will fire simultaneously.  Units = 8 dots (minus 1).
-  //      Printer default is 7 (64 dots, or 1/6 of 384-dot width), this code
-  //      sets it to 11 (96 dots, or 1/4 of width).
-  // n2 = "heating time" 3-255 -- duration that heating dots are fired.
-  //      Units = 10 us.  Printer default is 80 (800 us), this code sets it
-  //      to value passed (default 120, or 1.2 ms -- a little longer than
-  //      the default because we've increased the max heating dots).
-  // n3 = "heating interval" 0-255 -- recovery time between groups of
-  //      heating dots on line; possibly a function of power supply.
-  //      Units = 10 us.  Printer default is 2 (20 us), this code sets it
-  //      to 40 (throttled back due to 2A supply).
-  // More heating dots = more peak current, but faster printing speed.
-  // More heating time = darker print, but slower printing speed and
-  // possibly paper 'stiction'.  More heating interval = clearer print,
-  // but slower printing speed.
-
-  writeBytes(ASCII_ESC, '7');   // Esc 7 (print settings)
-  writeBytes(11, heatTime, 40); // Heating dots, heat time, heat interval
+  setHeatConfig();
 
   // Print density description from manual:
   // DC2 # n Set printing density
@@ -236,12 +219,12 @@ void Adafruit_Thermal::reset() {
   lineSpacing = 6;
   barcodeHeight = 50;
 
-#if PRINTER_FIRMWARE >= 264
-  // Configure tab stops on recent printers
-  writeBytes(ASCII_ESC, 'D'); // Set tab stops...
-  writeBytes(4, 8, 12, 16);   // ...every 4 columns,
-  writeBytes(20, 24, 28, 0);  // 0 marks end-of-list.
-#endif
+  if (firmware >= 264) {
+    // Configure tab stops on recent printers
+    writeBytes(ASCII_ESC, 'D'); // Set tab stops...
+    writeBytes(4, 8, 12, 16);   // ...every 4 columns,
+    writeBytes(20, 24, 28, 0);  // 0 marks end-of-list.
+  }
 }
 
 // Reset text formatting parameters.
@@ -280,22 +263,24 @@ void Adafruit_Thermal::setBarcodeHeight(uint8_t val) { // Default is 50
 
 void Adafruit_Thermal::printBarcode(const char *text, uint8_t type) {
   feed(1); // Recent firmware can't print barcode w/o feed first???
+  if (firmware >= 264)
+    type += 65;
   writeBytes(ASCII_GS, 'H', 2);    // Print label below barcode
   writeBytes(ASCII_GS, 'w', 3);    // Barcode width 3 (0.375/1.0mm thin/thick)
   writeBytes(ASCII_GS, 'k', type); // Barcode type (listed in .h file)
-#if PRINTER_FIRMWARE >= 264
-  int len = strlen(text);
-  if (len > 255)
-    len = 255;
-  writeBytes(len); // Write length byte
-  for (uint8_t i = 0; i < len; i++)
-    writeBytes(text[i]); // Write string sans NUL
-#else
-  uint8_t c, i = 0;
-  do { // Copy string + NUL terminator
-    writeBytes(c = text[i++]);
-  } while (c);
-#endif
+  if (firmware >= 264) {
+    int len = strlen(text);
+    if (len > 255)
+      len = 255;
+    writeBytes(len); // Write length byte
+    for (uint8_t i = 0; i < len; i++)
+      writeBytes(text[i]); // Write string sans NUL
+  } else {
+    uint8_t c, i = 0;
+    do { // Copy string + NUL terminator
+      writeBytes(c = text[i++]);
+    } while (c);
+  }
   timeoutSet((barcodeHeight + 40) * dotPrintTime);
   prevByte = '\n';
 }
@@ -335,35 +320,35 @@ void Adafruit_Thermal::normal() {
 }
 
 void Adafruit_Thermal::inverseOn() {
-#if PRINTER_FIRMWARE >= 268
-  writeBytes(ASCII_GS, 'B', 1);
-#else
-  setPrintMode(INVERSE_MASK);
-#endif
+  if (firmware >= 268) {
+    writeBytes(ASCII_GS, 'B', 1);
+  } else {
+    setPrintMode(INVERSE_MASK);
+  }
 }
 
 void Adafruit_Thermal::inverseOff() {
-#if PRINTER_FIRMWARE >= 268
-  writeBytes(ASCII_GS, 'B', 0);
-#else
-  unsetPrintMode(INVERSE_MASK);
-#endif
+  if (firmware >= 268) {
+    writeBytes(ASCII_GS, 'B', 0);
+  } else {
+    unsetPrintMode(INVERSE_MASK);
+  }
 }
 
 void Adafruit_Thermal::upsideDownOn() {
-#if PRINTER_FIRMWARE >= 268
-  writeBytes(ASCII_ESC, '{', 1);
-#else
-  setPrintMode(UPDOWN_MASK);
-#endif
+  if (firmware >= 268) {
+    writeBytes(ASCII_ESC, '{', 1);
+  } else {
+    setPrintMode(UPDOWN_MASK);
+  }
 }
 
 void Adafruit_Thermal::upsideDownOff() {
-#if PRINTER_FIRMWARE >= 268
-  writeBytes(ASCII_ESC, '{', 0);
-#else
-  unsetPrintMode(UPDOWN_MASK);
-#endif
+  if (firmware >= 268) {
+    writeBytes(ASCII_ESC, '{', 0);
+  } else {
+    unsetPrintMode(UPDOWN_MASK);
+  }
 }
 
 void Adafruit_Thermal::doubleHeightOn() { setPrintMode(DOUBLE_HEIGHT_MASK); }
@@ -402,15 +387,15 @@ void Adafruit_Thermal::justify(char value) {
 
 // Feeds by the specified number of lines
 void Adafruit_Thermal::feed(uint8_t x) {
-#if PRINTER_FIRMWARE >= 264
-  writeBytes(ASCII_ESC, 'd', x);
-  timeoutSet(dotFeedTime * charHeight);
-  prevByte = '\n';
-  column = 0;
-#else
-  while (x--)
-    write('\n'); // Feed manually; old firmware feeds excess lines
-#endif
+  if (firmware >= 264) {
+    writeBytes(ASCII_ESC, 'd', x);
+    timeoutSet(dotFeedTime * charHeight);
+    prevByte = '\n';
+    column = 0;
+  } else {
+    while (x--)
+      write('\n'); // Feed manually; old firmware feeds excess lines
+  }
 }
 
 // Feeds by the specified number of individual pixel rows
@@ -446,6 +431,29 @@ void Adafruit_Thermal::setSize(char value) {
 
   writeBytes(ASCII_GS, '!', size);
   prevByte = '\n'; // Setting the size adds a linefeed
+}
+
+// ESC 7 n1 n2 n3 Setting Control Parameter Command
+// n1 = "max heating dots" 0-255 -- max number of thermal print head
+//      elements that will fire simultaneously.  Units = 8 dots (minus 1).
+//      Printer default is 7 (64 dots, or 1/6 of 384-dot width), this code
+//      sets it to 11 (96 dots, or 1/4 of width).
+// n2 = "heating time" 3-255 -- duration that heating dots are fired.
+//      Units = 10 us.  Printer default is 80 (800 us), this code sets it
+//      to value passed (default 120, or 1.2 ms -- a little longer than
+//      the default because we've increased the max heating dots).
+// n3 = "heating interval" 0-255 -- recovery time between groups of
+//      heating dots on line; possibly a function of power supply.
+//      Units = 10 us.  Printer default is 2 (20 us), this code sets it
+//      to 40 (throttled back due to 2A supply).
+// More heating dots = more peak current, but faster printing speed.
+// More heating time = darker print, but slower printing speed and
+// possibly paper 'stiction'.  More heating interval = clearer print,
+// but slower printing speed.
+void Adafruit_Thermal::setHeatConfig(uint8_t dots, uint8_t time,
+                                     uint8_t interval) {
+  writeBytes(ASCII_ESC, '7');       // Esc 7 (print settings)
+  writeBytes(dots, time, interval); // Heating dots, heat time, heat interval
 }
 
 // Underlines of different weights can be produced:
@@ -570,41 +578,41 @@ void Adafruit_Thermal::sleep() {
 // Put the printer into a low-energy state after the given number
 // of seconds.
 void Adafruit_Thermal::sleepAfter(uint16_t seconds) {
-#if PRINTER_FIRMWARE >= 264
-  writeBytes(ASCII_ESC, '8', seconds, seconds >> 8);
-#else
-  writeBytes(ASCII_ESC, '8', seconds);
-#endif
+  if (firmware >= 264) {
+    writeBytes(ASCII_ESC, '8', seconds, seconds >> 8);
+  } else {
+    writeBytes(ASCII_ESC, '8', seconds);
+  }
 }
 
 // Wake the printer from a low-energy state.
 void Adafruit_Thermal::wake() {
   timeoutSet(0);   // Reset timeout counter
   writeBytes(255); // Wake
-#if PRINTER_FIRMWARE >= 264
-  delay(50);
-  writeBytes(ASCII_ESC, '8', 0, 0); // Sleep off (important!)
-#else
-  // Datasheet recommends a 50 mS delay before issuing further commands,
-  // but in practice this alone isn't sufficient (e.g. text size/style
-  // commands may still be misinterpreted on wake).  A slightly longer
-  // delay, interspersed with NUL chars (no-ops) seems to help.
-  for (uint8_t i = 0; i < 10; i++) {
-    writeBytes(0);
-    timeoutSet(10000L);
+  if (firmware >= 264) {
+    delay(50);
+    writeBytes(ASCII_ESC, '8', 0, 0); // Sleep off (important!)
+  } else {
+    // Datasheet recommends a 50 mS delay before issuing further commands,
+    // but in practice this alone isn't sufficient (e.g. text size/style
+    // commands may still be misinterpreted on wake).  A slightly longer
+    // delay, interspersed with NUL chars (no-ops) seems to help.
+    for (uint8_t i = 0; i < 10; i++) {
+      writeBytes(0);
+      timeoutSet(10000L);
+    }
   }
-#endif
 }
 
 // Check the status of the paper using the printer's self reporting
 // ability.  Returns true for paper, false for no paper.
 // Might not work on all printers!
 bool Adafruit_Thermal::hasPaper() {
-#if PRINTER_FIRMWARE >= 264
-  writeBytes(ASCII_ESC, 'v', 0);
-#else
-  writeBytes(ASCII_GS, 'r', 0);
-#endif
+  if (firmware >= 264) {
+    writeBytes(ASCII_ESC, 'v', 0);
+  } else {
+    writeBytes(ASCII_GS, 'r', 0);
+  }
 
   int status = -1;
   for (uint8_t i = 0; i < 10; i++) {
