@@ -5,27 +5,9 @@
 #ifndef ADAFRUIT_THERMAL_H
 #define ADAFRUIT_THERMAL_H
 
-/*!
- * *** EDIT THIS NUMBER ***  Printer firmware version is shown on test
- * page (hold feed button when connecting power).  Number used here is
- * integerized, e.g. 268 = 2.68 firmware.
- */
-#define PRINTER_FIRMWARE 268
-
 #include "Arduino.h"
 
-// Barcode types and charsets
-#if PRINTER_FIRMWARE >= 264
-#define UPC_A 65  //!< UPC-A barcode system. 11-12 char
-#define UPC_E 66  //!< UPC-E barcode system. 11-12 char
-#define EAN13 67  //!< EAN13 (JAN13) barcode system. 12-13 char
-#define EAN8 68   //!< EAN8 (JAN8) barcode system. 7-8 char
-#define CODE39 69 //!< CODE39 barcode system. 1<=num of chars
-#define ITF 70 //!< ITF barcode system. 1<=num of chars, must be an even number
-#define CODABAR 71 //!< CODABAR barcode system. 1<=num<=255
-#define CODE93 72  //!< CODE93 barcode system. 1<=num<=255
-#define CODE128 73 //!< CODE128 barcode system. 2<=num<=255
-
+// Internal character sets used with ESC R n
 #define CHARSET_USA 0           //!< American character set
 #define CHARSET_FRANCE 1        //!< French character set
 #define CHARSET_GERMANY 2       //!< German character set
@@ -44,6 +26,7 @@
 #define CHARSET_CROATIA 14      //!< Croatian character set
 #define CHARSET_CHINA 15        //!< Chinese character set
 
+// Character code tables used with ESC t n
 #define CODEPAGE_CP437 0    //!< USA, Standard Europe character code table
 #define CODEPAGE_KATAKANA 1 //!< Katakana (Japanese) character code table
 #define CODEPAGE_CP850 2    //!< Multilingual character code table
@@ -88,19 +71,19 @@
 #define CODEPAGE_THAI2 45       //!< Thai 2 character code page
 #define CODEPAGE_CP856 46       //!< Hebrew character code page
 #define CODEPAGE_CP874 47       //!< Thai character code page
-#else
-#define UPC_A 0
-#define UPC_E 1
-#define EAN13 2
-#define EAN8 3
-#define CODE39 4
-#define I25 5
-#define CODEBAR 6
-#define CODE93 7
-#define CODE128 8
-#define CODE11 9
-#define MSI 10
-#endif
+
+// Barcode types used with GS k m
+enum barcodes {
+  UPC_A,   //!< UPC-A barcode system. 11-12 char
+  UPC_E,   //!< UPC-E barcode system. 11-12 char
+  EAN13,   //!< EAN13 (JAN13) barcode system. 12-13 char
+  EAN8,    //!< EAN8 (JAN8) barcode system. 7-8 char
+  CODE39,  //!< CODE39 barcode system. 1<=num of chars
+  ITF,     //!< ITF barcode system. 1<=num of chars, must be an even number
+  CODABAR, //!< CODABAR barcode system. 1<=num<=255
+  CODE93,  //!< CODE93 barcode system. 1<=num<=255
+  CODE128, //!< CODE128 barcode system. 2<=num<=255
+};
 
 /*!
  * Driver for the thermal printer
@@ -126,9 +109,9 @@ public:
     write(uint8_t c);
   void
     /*!
-     * @param heatTime how much time to spend heating up the printer
+     * @param version firmware version as integer, e.g. 268 = 2.68 firmware
      */
-    begin(uint8_t heatTime=120),
+    begin(uint16_t version=268),
     /*!
      * @brief Disables bold text
      */
@@ -268,6 +251,13 @@ public:
      */
     setTimes(unsigned long, unsigned long),
     /*!
+     * @brief Sets print head heating configuration
+     * @param dots max printing dots, 8 dots per increment
+     * @param time heating time, 10us per increment
+     * @param interval heating interval, 10 us per increment
+     */
+    setHeatConfig(uint8_t dots=11, uint8_t time=120, uint8_t interval=40),
+    /*!
      * @brief Puts the printer into a low-energy state immediately
      */
     sleep(),
@@ -344,6 +334,7 @@ private:
       barcodeHeight, // Barcode height in dots, not including text
       maxChunkHeight,
       dtrPin;         // DTR handshaking pin (experimental)
+  uint16_t firmware;  // Firmware version
   boolean dtrEnabled; // True if DTR pin set & printer initialized
   unsigned long
       resumeTime,   // Wait until micros() exceeds this before sending byte
