@@ -8,6 +8,7 @@ var searchData=
   ['setheatconfig',['setHeatConfig',['../class_adafruit___thermal.html#a346e3143d6cb96857943a9e93360c606',1,'Adafruit_Thermal']]],
   ['setlineheight',['setLineHeight',['../class_adafruit___thermal.html#af408dbbdb130c502643ff6e3bfb6642e',1,'Adafruit_Thermal']]],
   ['setmaxchunkheight',['setMaxChunkHeight',['../class_adafruit___thermal.html#a2b24c1bb7cc00bed1f92b492d853b3ab',1,'Adafruit_Thermal']]],
+  ['setprintdensity',['setPrintDensity',['../class_adafruit___thermal.html#a1ce81287733db38a0c0b7ffb32ffcb24',1,'Adafruit_Thermal']]],
   ['setsize',['setSize',['../class_adafruit___thermal.html#a88eb1cd7697415c5bfa9640514b35ca0',1,'Adafruit_Thermal']]],
   ['settimes',['setTimes',['../class_adafruit___thermal.html#aa07ea6c16d3bd0a6f68816103f389198',1,'Adafruit_Thermal']]],
   ['sleep',['sleep',['../class_adafruit___thermal.html#a5c6b38ab849bf8a1988551467233d35d',1,'Adafruit_Thermal']]],
