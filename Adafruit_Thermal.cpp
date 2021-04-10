@@ -165,12 +165,6 @@ size_t Adafruit_Thermal::write(uint8_t c) {
   return 1;
 }
 
-/*!
-  @def printDensity
-  Printing density, default: 100% (? can go higher, text is darker but fuzzy)
-  @def printBreakTime
-  Printing break time. Default: 500 uS
-*/
 void Adafruit_Thermal::begin(uint16_t version) {
 
   firmware = version;
