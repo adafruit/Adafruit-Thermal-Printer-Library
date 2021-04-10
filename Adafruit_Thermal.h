@@ -260,6 +260,12 @@ public:
      */
     setHeatConfig(uint8_t dots=11, uint8_t time=120, uint8_t interval=40),
     /*!
+     * @brief Sets print density
+     * @param density printing density
+     * @param breakTime printing break time
+     */
+    setPrintDensity(uint8_t density=10, uint8_t breakTime=2),
+    /*!
      * @brief Puts the printer into a low-energy state immediately
      */
     sleep(),

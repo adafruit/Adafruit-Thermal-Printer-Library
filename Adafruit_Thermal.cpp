@@ -81,11 +81,13 @@ void Adafruit_Thermal::timeoutSet(unsigned long x) {
 // This function waits (if necessary) for the prior task to complete.
 void Adafruit_Thermal::timeoutWait() {
   if (dtrEnabled) {
-    while (digitalRead(dtrPin) == HIGH)
-      ;
+    while (digitalRead(dtrPin) == HIGH) {
+      yield();
+    };
   } else {
-    while ((long)(micros() - resumeTime) < 0L)
-      ; // (syntax is rollover-proof)
+    while ((long)(micros() - resumeTime) < 0L) {
+      yield();
+    }; // (syntax is rollover-proof)
   }
 }
 
@@ -163,12 +165,6 @@ size_t Adafruit_Thermal::write(uint8_t c) {
   return 1;
 }
 
-/*!
-  @def printDensity
-  Printing density, default: 100% (? can go higher, text is darker but fuzzy)
-  @def printBreakTime
-  Printing break time. Default: 500 uS
-*/
 void Adafruit_Thermal::begin(uint16_t version) {
 
   firmware = version;
@@ -182,20 +178,6 @@ void Adafruit_Thermal::begin(uint16_t version) {
   reset();
 
   setHeatConfig();
-
-  // Print density description from manual:
-  // DC2 # n Set printing density
-  // D4..D0 of n is used to set the printing density.  Density is
-  // 50% + 5% * n(D4-D0) printing density.
-  // D7..D5 of n is used to set the printing break time.  Break time
-  // is n(D7-D5)*250us.
-  // (Unsure of the default value for either -- not documented)
-
-#define printDensity 10
-
-#define printBreakTime 2
-
-  writeBytes(ASCII_DC2, '#', (printBreakTime << 5) | printDensity);
 
   // Enable DTR pin if requested
   if (dtrPin < 255) {
@@ -454,6 +436,17 @@ void Adafruit_Thermal::setHeatConfig(uint8_t dots, uint8_t time,
                                      uint8_t interval) {
   writeBytes(ASCII_ESC, '7');       // Esc 7 (print settings)
   writeBytes(dots, time, interval); // Heating dots, heat time, heat interval
+}
+
+// Print density description from manual:
+// DC2 # n Set printing density
+// D4..D0 of n is used to set the printing density.  Density is
+// 50% + 5% * n(D4-D0) printing density.
+// D7..D5 of n is used to set the printing break time.  Break time
+// is n(D7-D5)*250us.
+// (Unsure of the default value for either -- not documented)
+void Adafruit_Thermal::setPrintDensity(uint8_t density, uint8_t breakTime) {
+  writeBytes(ASCII_DC2, '#', (density << 5) | breakTime);
 }
 
 // Underlines of different weights can be produced:
