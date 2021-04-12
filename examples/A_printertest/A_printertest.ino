@@ -47,6 +47,14 @@ void setup() {
   // over and over (which would happen if they were in loop() instead).
   // Some functions will feed a line when called, this is normal.
 
+  // Font options
+  printer.setFont('B');
+  printer.println("FontB");
+  printer.println("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  printer.setFont('A');
+  printer.println("FontA (default)");
+  printer.println("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
   // Test inverse on & off
   printer.inverseOn();
   printer.println(F("Inverse ON"));

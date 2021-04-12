@@ -268,7 +268,7 @@ void Adafruit_Thermal::printBarcode(const char *text, uint8_t type) {
 }
 
 // === Character commands ===
-
+#define FONT_MASK (1 << 0)          //!< Select character font A or B
 #define INVERSE_MASK                                                           \
   (1 << 1) //!< Turn on/off white/black reverse printing mode. Not in 2.6.8
            //!< firmware (see inverseOn())
@@ -278,18 +278,43 @@ void Adafruit_Thermal::printBarcode(const char *text, uint8_t type) {
 #define DOUBLE_WIDTH_MASK (1 << 5)  //!< Turn on/off double-width printing mode
 #define STRIKE_MASK (1 << 6)        //!< Turn on/off deleteline mode
 
+void Adafruit_Thermal::adjustCharValues(uint8_t printMode) {
+  uint8_t charWidth;
+  if (printMode & FONT_MASK) {
+    // FontB
+    charHeight = 17;
+    charWidth = 9;
+  } else {
+    // FontA
+    charHeight = 24;
+    charWidth = 12;
+  }
+  // Double Width Mode
+  if (printMode & DOUBLE_WIDTH_MASK) {
+    maxColumn /= 2;
+    charWidth *= 2;
+  }
+  // Double Height Mode
+  if (printMode & DOUBLE_HEIGHT_MASK) {
+    charHeight *= 2;
+  }
+  maxColumn = (384 / charWidth);
+}
+
 void Adafruit_Thermal::setPrintMode(uint8_t mask) {
   printMode |= mask;
   writePrintMode();
-  charHeight = (printMode & DOUBLE_HEIGHT_MASK) ? 48 : 24;
-  maxColumn = (printMode & DOUBLE_WIDTH_MASK) ? 16 : 32;
+  adjustCharValues(printMode);
+  //charHeight = (printMode & DOUBLE_HEIGHT_MASK) ? 48 : 24;
+  //maxColumn = (printMode & DOUBLE_WIDTH_MASK) ? 16 : 32;
 }
 
 void Adafruit_Thermal::unsetPrintMode(uint8_t mask) {
   printMode &= ~mask;
   writePrintMode();
-  charHeight = (printMode & DOUBLE_HEIGHT_MASK) ? 48 : 24;
-  maxColumn = (printMode & DOUBLE_WIDTH_MASK) ? 16 : 32;
+  adjustCharValues(printMode);
+  //charHeight = (printMode & DOUBLE_HEIGHT_MASK) ? 48 : 24;
+  //maxColumn = (printMode & DOUBLE_WIDTH_MASK) ? 16 : 32;
 }
 
 void Adafruit_Thermal::writePrintMode() {
@@ -395,24 +420,30 @@ void Adafruit_Thermal::setSize(char value) {
 
   switch (toupper(value)) {
   default: // Small: standard width and height
-    size = 0x00;
-    charHeight = 24;
-    maxColumn = 32;
+    //size = 0x00;
+    //charHeight = 24;
+    //maxColumn = 32;
+    doubleWidthOff();
+    doubleHeightOff();
     break;
   case 'M': // Medium: double height
-    size = 0x01;
-    charHeight = 48;
-    maxColumn = 32;
+    //size = 0x01;
+    //charHeight = 48;
+    //maxColumn = 32;
+    doubleHeightOn();
+    doubleWidthOff();
     break;
   case 'L': // Large: double width and height
-    size = 0x11;
-    charHeight = 48;
-    maxColumn = 16;
+    //size = 0x11;
+    //charHeight = 48;
+    //maxColumn = 16;
+    doubleHeightOn();
+    doubleWidthOn();
     break;
   }
 
-  writeBytes(ASCII_GS, '!', size);
-  prevByte = '\n'; // Setting the size adds a linefeed
+  //writeBytes(ASCII_GS, '!', size);
+  //prevByte = '\n'; // Setting the size adds a linefeed
 }
 
 // ESC 7 n1 n2 n3 Setting Control Parameter Command
@@ -652,6 +683,17 @@ void Adafruit_Thermal::setCodePage(uint8_t val) {
 void Adafruit_Thermal::tab() {
   writeBytes(ASCII_TAB);
   column = (column + 4) & 0b11111100;
+}
+
+void Adafruit_Thermal::setFont(char font) {
+  switch (toupper(font)) {
+    case 'B':
+      setPrintMode(FONT_MASK);
+      break;
+    case 'A':
+    default:
+      unsetPrintMode(FONT_MASK);
+  }
 }
 
 void Adafruit_Thermal::setCharSpacing(int spacing) {
