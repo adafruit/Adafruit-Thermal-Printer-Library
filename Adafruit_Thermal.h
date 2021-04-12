@@ -357,8 +357,7 @@ private:
       writeBytes(uint8_t a, uint8_t b, uint8_t c),
       writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d),
       setPrintMode(uint8_t mask), unsetPrintMode(uint8_t mask),
-      writePrintMode(),
-      adjustCharValues(uint8_t printMode);
+      writePrintMode(), adjustCharValues(uint8_t printMode);
 };
 
 #endif // ADAFRUIT_THERMAL_H
