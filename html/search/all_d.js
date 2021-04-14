@@ -5,6 +5,7 @@ var searchData=
   ['setcharspacing',['setCharSpacing',['../class_adafruit___thermal.html#a05fdbed65367317c127a80d8550c197c',1,'Adafruit_Thermal']]],
   ['setcodepage',['setCodePage',['../class_adafruit___thermal.html#a803d602ab0ed22c6cd1ca1ebfb4be6b6',1,'Adafruit_Thermal']]],
   ['setdefault',['setDefault',['../class_adafruit___thermal.html#ad9cb0e9f847355324170c0a60a8a21d0',1,'Adafruit_Thermal']]],
+  ['setfont',['setFont',['../class_adafruit___thermal.html#a8abde09f999a456c8c3f7fbcdbc8ff0c',1,'Adafruit_Thermal']]],
   ['setheatconfig',['setHeatConfig',['../class_adafruit___thermal.html#a346e3143d6cb96857943a9e93360c606',1,'Adafruit_Thermal']]],
   ['setlineheight',['setLineHeight',['../class_adafruit___thermal.html#af408dbbdb130c502643ff6e3bfb6642e',1,'Adafruit_Thermal']]],
   ['setmaxchunkheight',['setMaxChunkHeight',['../class_adafruit___thermal.html#a2b24c1bb7cc00bed1f92b492d853b3ab',1,'Adafruit_Thermal']]],

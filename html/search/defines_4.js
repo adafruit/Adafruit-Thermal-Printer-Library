@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['inverse_5fmask',['INVERSE_MASK',['../_adafruit___thermal_8cpp.html#a87d5105ed55a23e6585a98500a60d96f',1,'Adafruit_Thermal.cpp']]]
+  ['font_5fmask',['FONT_MASK',['../_adafruit___thermal_8cpp.html#accb76de7ecd800e5e5e4c00785a57191',1,'Adafruit_Thermal.cpp']]]
 ];
