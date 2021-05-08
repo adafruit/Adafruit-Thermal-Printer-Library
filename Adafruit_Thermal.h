@@ -101,6 +101,8 @@ public:
    * @param dtr Data Terminal Ready control
    */
   Adafruit_Thermal(Stream *s = &Serial, uint8_t dtr = 255);
+  
+  ~Adafruit_Thermal();
 
   size_t
     /*!
