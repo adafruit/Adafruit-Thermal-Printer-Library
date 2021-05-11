@@ -74,7 +74,9 @@ Adafruit_Thermal::Adafruit_Thermal(Stream *s, uint8_t dtr)
 
 // Destructor
 Adafruit_Thermal::~Adafruit_Thermal(){
-  delete stream;
+  if (stream != nullptr) {
+    delete stream;
+  }
 }
 
 // This method sets the estimated completion time for a just-issued task.
