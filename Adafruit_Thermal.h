@@ -339,7 +339,7 @@ public:
     hasPaper();
 
 private:
-  Stream *stream;
+  Stream *stream = nullptr;
   uint8_t printMode,
       prevByte,      // Last character issued to printer
       column,        // Last horizontal column printed
