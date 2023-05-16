@@ -1,7 +1,5 @@
-> ---
-> **!!! NOTE !!!**
-> **THIS REPOSITORY IS ARCHIVED AND IS NO LONGER SUPPORTED OR MAINTAINED***
-> ---
+# !!! NOTE !!!
+# THIS REPOSITORY IS ARCHIVED AND IS NO LONGER SUPPORTED OR MAINTAINED
 
 # Adafruit Thermal Printer Library [![Build Status](https://github.com/adafruit/Adafruit-Thermal-Printer-Library/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/Adafruit-Thermal-Printer-Library/actions)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit-Thermal-Printer-Library/html/index.html)
 
