@@ -101,6 +101,8 @@ public:
    * @param dtr Data Terminal Ready control
    */
   Adafruit_Thermal(Stream *s = &Serial, uint8_t dtr = 255);
+  
+  ~Adafruit_Thermal();
 
   size_t
     /*!
@@ -337,7 +339,7 @@ public:
     hasPaper();
 
 private:
-  Stream *stream;
+  Stream *stream = nullptr;
   uint8_t printMode,
       prevByte,      // Last character issued to printer
       column,        // Last horizontal column printed

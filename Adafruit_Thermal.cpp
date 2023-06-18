@@ -72,6 +72,13 @@ Adafruit_Thermal::Adafruit_Thermal(Stream *s, uint8_t dtr)
   dtrEnabled = false;
 }
 
+// Destructor
+Adafruit_Thermal::~Adafruit_Thermal(){
+  if (stream != nullptr) {
+    delete stream;
+  }
+}
+
 // This method sets the estimated completion time for a just-issued task.
 void Adafruit_Thermal::timeoutSet(unsigned long x) {
   if (!dtrEnabled)
